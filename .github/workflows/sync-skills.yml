@@ -46,13 +46,15 @@ jobs:
           ADDED=0
           REMOVED=0
 
-          # Build list of upstream skill files
+          # Build list of upstream skill directories
           declare -A upstream_skills
           if [ -d "$UPSTREAM_DIR" ]; then
-            for f in "$UPSTREAM_DIR"/*.md; do
-              [ -f "$f" ] || continue
-              name="$(basename "$f" .md)"
-              upstream_skills["$name"]="$f"
+            for d in "$UPSTREAM_DIR"/*/; do
+              [ -d "$d" ] || continue
+              name="$(basename "$d")"
+              if [ -f "$d/SKILL.md" ]; then
+                upstream_skills["$name"]="$d"
+              fi
             done
           fi
 
@@ -73,9 +75,10 @@ jobs:
 
           # Process each upstream skill
           for name in "${!upstream_skills[@]}"; do
-            upstream_file="${upstream_skills[$name]}"
-            local_file="$LOCAL_DIR/${name}.md"
-            new_hash=$(sha256sum "$upstream_file" | awk '{print $1}')
+            upstream_dir="${upstream_skills[$name]}"
+            upstream_skill_file="$upstream_dir/SKILL.md"
+            local_dir="$LOCAL_DIR/$name"
+            new_hash=$(sha256sum "$upstream_skill_file" | awk '{print $1}')
 
             # Get existing hash from lock file
             existing_hash=""
@@ -84,8 +87,10 @@ jobs:
             fi
 
             if [ "$FORCE" = "true" ] || [ "$new_hash" != "$existing_hash" ]; then
-              cp "$upstream_file" "$local_file"
-              echo "✅ Updated: ${name}.md"
+              # Copy full skill directory (SKILL.md + references/ + assets/)
+              rm -rf "$local_dir"
+              cp -R "$upstream_dir" "$local_dir"
+              echo "✅ Updated: $name/ (SKILL.md + references)"
 
               # Update lock file hash
               if command -v jq &>/dev/null; then
@@ -106,7 +111,7 @@ jobs:
                 UPDATED=$((UPDATED + 1))
               fi
             else
-              echo "⏭️  Unchanged: ${name}.md"
+              echo "⏭️  Unchanged: $name/"
             fi
           done
 
@@ -115,8 +120,8 @@ jobs:
             while IFS= read -r skill_name; do
               source_val=$(jq -r ".skills[\"$skill_name\"].source" "$LOCK_FILE")
               if [ "$source_val" = "dynatrace/dynatrace-for-ai" ] && [ -z "${upstream_skills[$skill_name]+x}" ]; then
-                echo "🗑️  Upstream skill removed: ${skill_name}.md"
-                rm -f "$LOCAL_DIR/${skill_name}.md"
+                echo "🗑️  Upstream skill removed: $skill_name/"
+                rm -rf "$LOCAL_DIR/$skill_name"
                 tmp=$(mktemp)
                 jq "del(.skills[\"$skill_name\"])" "$LOCK_FILE" > "$tmp"
                 mv "$tmp" "$LOCK_FILE"

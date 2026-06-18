@@ -176,8 +176,9 @@ This is equivalent to running `bash setup.sh`. Reference files are gitignored (t
 ```
 1. reference/DATA_REFERENCE_INDEX.md - Central index and quick lookups
 2. reference/Entities_Reference.md - Cached entity IDs (avoid lookups)
-3. skills/dt-dql-essentials.md - REQUIRED before writing any DQL
-4. Read ALL files in skills/ directory in full before executing any query, command, or code change
+3. skills/dt-dql-essentials/SKILL.md - REQUIRED before writing any DQL
+4. Read ALL SKILL.md files in skills/ subdirectories before executing any query, command, or code change
+   Skills may reference files in their own references/ subdirectory — load those on demand
 5. Relevant data type reference for your task:
    - reference/BizEvents_Reference.md - Event types
    - reference/Spans_Reference.md - Trace patterns
@@ -419,27 +420,33 @@ curl -H "Authorization: Api-Token $DT_GEN2_API_TOKEN" "$DT_CLASSIC_ENVIRONMENT/a
 
 Skills are portable knowledge packages that provide domain-specific DQL context. **Read the relevant skill file before writing queries for that domain.**
 
-| Skill File | Domain | When to Load |
+| Skill | Domain | When to Load |
 |-----------|--------|-------------|
-| `skills/dt-dql-essentials.md` | **REQUIRED** — DQL syntax, pitfalls, data objects | Before writing ANY DQL query |
-| `skills/dt-obs-services.md` | Service RED metrics, runtime monitoring | Service performance, SLA, messaging |
-| `skills/dt-obs-frontends.md` | RUM, Web Vitals, user sessions, mobile | Frontend performance, user behavior |
-| `skills/dt-obs-tracing.md` | Distributed traces, spans, failures | Trace analysis, failure investigation |
-| `skills/dt-obs-logs.md` | Log queries, filtering, patterns | Log analysis, error investigation |
-| `skills/dt-obs-problems.md` | Problem analysis, root cause, impact | Davis problems, incident response |
-| `skills/dt-obs-hosts.md` | Host/process metrics, infrastructure | CPU, memory, disk, network monitoring |
-| `skills/dt-obs-kubernetes.md` | K8s clusters, pods, nodes, workloads | Kubernetes troubleshooting |
-| `skills/dt-obs-aws.md` | AWS resources, cost, security | AWS infrastructure analysis |
-| `skills/dt-finops-kubernetes.md` | K8s FinOps analysis, cost optimization | FinOps reports, cost allocation, rightsizing |
-| `skills/dt-app-dashboards.md` | Dashboard creation/modification | Building dashboards |
-| `skills/dt-app-notebooks.md` | Notebook creation/modification | Building notebooks |
-| `skills/dt-migration.md` | Classic entity → Smartscape migration | Migrating old DQL queries |
+| `skills/dt-dql-essentials/SKILL.md` | **REQUIRED** — DQL syntax, pitfalls, data objects | Before writing ANY DQL query |
+| `skills/dt-obs-services/SKILL.md` | Service RED metrics, runtime monitoring | Service performance, SLA, messaging |
+| `skills/dt-obs-frontends/SKILL.md` | RUM, Web Vitals, user sessions, mobile | Frontend performance, user behavior |
+| `skills/dt-obs-tracing/SKILL.md` | Distributed traces, spans, failures | Trace analysis, failure investigation |
+| `skills/dt-obs-logs/SKILL.md` | Log queries, filtering, patterns | Log analysis, error investigation |
+| `skills/dt-obs-problems/SKILL.md` | Problem analysis, root cause, impact | Davis problems, incident response |
+| `skills/dt-obs-hosts/SKILL.md` | Host/process metrics, infrastructure | CPU, memory, disk, network monitoring |
+| `skills/dt-obs-kubernetes/SKILL.md` | K8s clusters, pods, nodes, workloads | Kubernetes troubleshooting |
+| `skills/dt-obs-aws/SKILL.md` | AWS resources, cost, security | AWS infrastructure analysis |
+| `skills/dt-obs-azure/SKILL.md` | Azure cloud resources, cost, networking | Azure infrastructure |
+| `skills/dt-obs-gcp/SKILL.md` | GCP cloud resources, cost, networking | GCP infrastructure |
+| `skills/dt-obs-predictive-analytics/SKILL.md` | Trend detection, forecasting, anomaly scoring | Predictive analysis |
+| `skills/dt-alerting/SKILL.md` | Alerting config, anomaly detectors, notifications | Alert setup |
+| `skills/dt-js-runtime/SKILL.md` | Dynatrace JS runtime, SDKs, automation | App/workflow development |
+| `skills/dt-app-dashboards/SKILL.md` | Dashboard creation/modification | Building dashboards |
+| `skills/dt-app-notebooks/SKILL.md` | Notebook creation/modification | Building notebooks |
+| `skills/dt-migration/SKILL.md` | Classic entity → Smartscape migration | Migrating old DQL queries |
+
+Each skill directory may contain a `references/` subdirectory with detailed sub-topics. SKILL.md will indicate when to load these with "Load [filename] when:" directives.
 
 ### Skill Loading Protocol
-1. **Always** read all files in `skills/` in full before executing any query, command, or code change
-2. **Always** load `dt-dql-essentials` before writing DQL
+1. **Always** read the relevant `SKILL.md` files before executing any query, command, or code change
+2. **Always** load `skills/dt-dql-essentials/SKILL.md` before writing DQL
 3. Load domain-specific skills based on the user's request
-4. Skills use progressive disclosure — start with SKILL.md, load references on demand
+4. When a SKILL.md says "Load [file] when:", read that file from the skill's `references/` subdirectory on demand
 5. Reference the Dynatrace Semantic Dictionary for field validation: https://docs.dynatrace.com/docs/shortlink/semantic-dictionary
 
 ---
