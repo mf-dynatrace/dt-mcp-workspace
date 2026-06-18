@@ -3,68 +3,93 @@
   "metadata": {
     "description": "Tracks all skills in the skills/ directory. Upstream skills are auto-synced from GitHub. Custom skills are managed locally.",
     "upstreamRepo": "dynatrace/dynatrace-for-ai",
-    "lastSyncedAt": null
+    "lastSyncedAt": "2026-06-18T00:00:00Z"
   },
   "skills": {
+    "dt-alerting": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "a128123013c6d509a0c1cd2ebbd6e74d645b0326f8c8f8a540edd5796d64d984"
+    },
     "dt-app-dashboards": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "1e97f41b49df5facd4116fc48e25654dae46dec140fe01f48a208d1951126599"
+      "computedHash": "66db8d73926867be1981abe73d7a45e21ac8e32d835c68ef142431ea667c7b52"
     },
     "dt-app-notebooks": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "7da21f4a3ca825474aefd30acccbe9f05fa7ba49ad088b30154a51d9a6080f6a"
+      "computedHash": "56e6cdd2cb5e05cbf4443bf08954c8ab44e21c2ffe8cff7b1ff53052d7d6fa03"
     },
     "dt-dql-essentials": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "9633066dc0f16ab7e806c4fb0222715dd968d03866399f10872b7247110a6f11"
+      "computedHash": "8e47f8b0c594b8f2b0c5ba887688efc5e409216f5d86897576c849abdfde1743"
+    },
+    "dt-js-runtime": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "0eaf5198ab8f3c9562dfbf628e38866dd812d185468c9bce3afc955bb1f6669a"
     },
     "dt-migration": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "a0c91f3d0d73f21db0c6d754f65573efa91c5ba462eaa5d995c9f39ea1bfc7de"
+      "computedHash": "c92eb2a8d9bf49611980e873966536594df996949a4b44ea3a27a8da10050ce9"
     },
     "dt-obs-aws": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "6db721d3139142942ec487913685cc8e3b9b8bf86b164d6bbf7ac4a9869c7687"
+      "computedHash": "0a7e0968d9715edcbb858fb0574436e06d6e57c584863dbb014f3e27869c5a0b"
+    },
+    "dt-obs-azure": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "6ab1931d94482a82f804be38c0b6a2e5ce7c66d69e82a49f9b1ea70aabae23b5"
     },
     "dt-obs-frontends": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "196c4eeb3eb18e477f99db016761402be94e0b573fc2ad5a8fb60affedf78ec0"
+      "computedHash": "4c0a5012c1ef9f97fc2aa66d73f56ed5d00c474c48a6c71645d9b0aef652a7cc"
+    },
+    "dt-obs-gcp": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "3d77df5d42ff1f7eee61d1c3ad50df08ff55191d1a3ca649b1aab0315d6f9801"
     },
     "dt-obs-hosts": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "06e561cb7debd954a885680edef8404a3921c1f8b0f76cdb0144ce79a7e7add9"
+      "computedHash": "108b3285803a18e9a9f8e5eb8b3137f27724005c70f65f1c4a0c6e8e6fa401f3"
     },
     "dt-obs-kubernetes": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "5efe54f56c3c84acdd278ca0d425115939dbea8e3792549aea936c54702c5027"
+      "computedHash": "9e1b0f0ba78253936f76676616dd6b84f13de137dd24c5011a6cca153ee4e8f3"
     },
     "dt-obs-logs": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "9e51796ef92508ff9789762e644d241d6a0734074d5d708b9bc2585238deea5d"
+      "computedHash": "459fcdbec37083154f2edd154bfa2fa25c0358261e1a5e16f41e95e0a5152b88"
+    },
+    "dt-obs-predictive-analytics": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "8bc2ca7e87c9f033325c90387830267401c4f567b4b19a483ab0b07fe968042b"
     },
     "dt-obs-problems": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "c1a9c940c6354ec463b64a4a8a858a84f7d37dbf3e2e886d3ae7f3d8d876a01a"
+      "computedHash": "1ce42d009ad2358878a420d9402b4d65d8e77c27d2e1c0557527db32dd51403c"
     },
     "dt-obs-services": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "263186926a128143a3f03a006f6df5dc50722c99b4d7f2e28b700c9fb01c1040"
+      "computedHash": "c37a0b78a2ffd45b5254134b0653785c25371d7ca9a335e86c5a861b0f80c87e"
     },
     "dt-obs-tracing": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "defe0758376693957ab4a880f67ce0dfd610313225980b1c5e756cfbd5006780"
+      "computedHash": "de7370713e4a7cbdb85004876848e6cd98b3d630f1355fdd1f6145cd50a2b84a"
     }
   }
 }

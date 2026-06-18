@@ -1,11 +1,20 @@
-# Dynatrace Dashboard Skill
-> Source: [Dynatrace/dynatrace-for-ai](https://github.com/Dynatrace/dynatrace-for-ai) — `dt-app-dashboards`
-
-Create, modify, query, and analyze Dynatrace dashboards.
-
+---
+name: dt-app-dashboards
+description: Work with Dynatrace dashboards - create, modify, query, and analyze dashboard JSON including tiles, layouts, DQL queries, variables, and visualizations.
+license: Apache-2.0
 ---
 
-## Dashboard Structure
+# Dynatrace Dashboard Skill
+
+## Overview
+
+Dynatrace dashboards are JSON documents stored in the Document Store containing
+tiles (content/visualizations), layouts (grid positioning), and variables
+(dynamic query parameters).
+
+**When to use:** Creating, modifying, querying, or analyzing dashboards.
+
+## Dashboard JSON Structure
 
 ```json
 {
@@ -14,78 +23,61 @@ Create, modify, query, and analyze Dynatrace dashboards.
   "content": {
     "version": 21,
     "variables": [],
-    "tiles": {},
-    "layouts": {}
+    "tiles": { "<id>": { "type": "data|markdown", ... } },
+    "layouts": { "<id>": { "x": 0, "y": 0, "w": 24, "h": 8 } }
   }
 }
 ```
 
----
+- Tile IDs in `tiles` must match IDs in `layouts`
+- Grid is 24 units wide. Common widths: 24 (full), 12 (half), 6 (quarter)
+- Two tile types: `markdown` (text content) and `data` (DQL query + visualization)
 
-## Tiles
+**Optional content properties:** `settings`, `refreshRate`, `annotations`
 
-**Markdown tiles:** `{"type": "markdown", "content": "# Title"}`
-**Data tiles:** `{"type": "data", "title": "...", "query": "...", "visualization": "..."}`
+## Create/Update Workflow (Mandatory Order)
 
-### Visualizations
+Carefully follow the workflow described in [references/create-update.md](references/create-update.md).
 
-| Type | Data Shape | Examples |
-|------|-----------|---------|
-| Time-series (MUST have time dimension) | `timeseries`/`makeTimeseries` | `lineChart`, `areaChart`, `barChart`, `bandChart` |
-| Categorical (no time, `summarize...by:`) | `summarize...by:{field}` | `categoricalBarChart`, `pieChart`, `donutChart` |
-| Single value/gauge | Single numeric record | `singleValue`, `meterBar`, `gauge` |
-| Tabular/raw | Any data shape | `table`, `raw`, `recordList` |
-| Distribution/status | | `histogram`, `honeycomb` |
-| Geographic maps | | `choroplethMap`, `dotMap`, `connectionMap`, `bubbleMap` |
-| Matrix/correlation | | `heatmap`, `scatterplot` |
+**Key rules:**
+- Load domain skills BEFORE generating queries — do not invent DQL
+- Validate ALL queries before adding to dashboard
+- No time-range filters in queries unless explicitly requested by user
+- Set `name` before deploying
+- **Updating — ALWAYS download first:** `dtctl get dashboard <id> -o json --plain > dashboard.json`, modify, then deploy the downloaded file. Never reconstruct JSON from scratch or inject an `id` manually — both silently overwrite any UI edits the user made since last deployment.
+- **Deploy with `dtctl apply`** — validation runs automatically, and the local file is deleted on success.
 
----
+## Visualization Types
 
-## Layouts
+- **Time-series** (require `timeseries`/`makeTimeseries`): `lineChart`, `areaChart`, `barChart`, `bandChart`
+- **Categorical** (`summarize ... by:{field}`): `categoricalBarChart`, `pieChart`, `donutChart`
+- **Single value/gauge** (single numeric record): `singleValue`, `meterBar`, `gauge`
+- **Tabular** (any data shape): `table`, `raw`, `recordList`
+- **Distribution/status**: `histogram`, `honeycomb`
+- **Maps**: `choroplethMap`, `dotMap`, `connectionMap`, `bubbleMap`
+- **Matrix**: `heatmap`, `scatterplot`
 
-**Grid:** 20 units wide. Common widths: Full (20), Half (10), Third (6-7), Quarter (5)
-**Properties:** `x` (0-19), `y` (0+), `w` (1-20), `h` (1-20)
+Required field types per visualization: [references/tiles.md](references/tiles.md)
 
-Each tile ID in `tiles` must have a corresponding entry in `layouts`.
-
----
-
-## Variables
+## Variables Quick Reference
 
 ```json
-{
-  "version": 2, "key": "ServiceFilter", "type": "query",
-  "visible": true, "editable": true,
-  "input": "smartscapeNodes SERVICE | fields name",
-  "multiple": false, "defaultValue": "*"
-}
+{ "version": 2, "key": "Service", "type": "query", "visible": true,
+  "editable": true, "input": "smartscapeNodes SERVICE | fields name",
+  "multiple": false }
 ```
 
-**Single-select:** `fetch logs | filter service.name == $ServiceFilter`
-**Multi-select:** `fetch logs | filter in(service.name, array($ServiceFilter))`
+- **Single-select:** `filter service.name == $Service`
+- **Multi-select:** `filter in(service.name, array($Service))`
+- Types: `query` (DQL-populated), `csv` (static list), `text` (free-form)
 
----
+Full variable reference: [references/variables.md](references/variables.md)
 
-## Dashboard Creation Workflow
+## References
 
-1. Define purpose and load required skills/references
-2. Explore available data fields/metrics
-3. Plan structure: logic, variables, tiles, layout
-4. Design and validate all DQL queries
-5. Construct dashboard JSON
-6. Validate JSON structure and queries
-7. Deploy via Dynatrace API
-
----
-
-## Best Practices
-
-- Match tile IDs in `tiles` and `layouts`
-- Use descriptive variable IDs
-- Start with full-width headers (y=0)
-- Optimize queries with `limit`/`summarize`
-- Set version=21
-- **No time-range filters in queries** unless explicitly requested
-- Executive pattern: header + KPIs + trends
-- Service Health pattern: RED metrics
-- Infrastructure pattern: resource metrics + tables
+| File | When to Load |
+|------|-------------|
+| [create-update.md](references/create-update.md) | Creating/updating dashboards |
+| [tiles.md](references/tiles.md) | Tile types, visualization field requirements, settings |
+| [variables.md](references/variables.md) | Variable types, replacement strategies, patterns |
+| [analyzing.md](references/analyzing.md) | Reading dashboards, extracting queries, health assessment |
