@@ -3,157 +3,136 @@
 > **Version:** 3.0  
 > **Created:** 30 January 2026  
 > **Updated:** 18 June 2026  
-> **Purpose:** Reusable, auto-updating template for Dynatrace MCP connections with cost optimization, self-learning capabilities, and multi-tenant skill propagation
+> **Purpose:** Reusable, auto-updating Dynatrace MCP workspace with cost optimization, self-learning capabilities, and multi-tenant skill propagation
 >
 > **What's new in 3.0:**
 > - **Auto-updating skills** — Skills sync from [dynatrace-for-ai](https://github.com/Dynatrace/dynatrace-for-ai) weekly via GitHub Actions. Users receive updates via `git pull`.
 > - **Custom skill support** — `skills-lock.json` v2 tracks both upstream and custom skills. Custom skills are never overwritten by the sync.
 > - **Reference files are now local-only** — `reference/*.md` files are gitignored (tenant-specific data stays safe across pulls). Templates (`*.template.md`) are tracked.
 > - **Auto-pull on workspace open** — VS Code task runs `git pull --ff-only` silently when the workspace opens.
+> - **One-way sync** — Push is disabled after migration to prevent accidental upload of tenant data.
 > - **First-run setup script** — `bash setup.sh` initializes reference files from templates and validates `.env`.
 
 ---
 
-## 🔌 MCP Server Setup
+## 🚀 New Install
 
-### Supported AI Clients
+```bash
+git clone https://github.com/mf-dynatrace/dt-mcp-workspace.git my-client-workspace
+cd my-client-workspace
+bash setup.sh
+cp .env.example .env
+```
 
-This workspace supports two AI clients — both use the same `.env` file:
+Edit `.env` with your Dynatrace credentials:
+```dotenv
+DT_ENVIRONMENT=https://YOUR_TENANT_ID.apps.dynatrace.com
+DT_PLATFORM_TOKEN=YOUR_PLATFORM_TOKEN_HERE
+MCP_USER_ID=your.email@company.com
+```
+
+Then launch your AI client:
+- **VS Code:** `code .` → Copilot Chat → *"What environment am I connected to?"*
+- **Claude Code:** `claude` from the workspace root
+
+> See [INSTALL.md](INSTALL.md) for detailed platform-specific instructions, token scopes, and Windows setup.
+
+---
+
+## ⬆️ Upgrade (From MCP-cleanDeploy)
+
+If you have an existing workspace (git-cloned **or** folder-copied):
+
+```bash
+cd my-client-workspace
+curl -fsSL https://raw.githubusercontent.com/mf-dynatrace/dt-mcp-workspace/main/migrate-to-v3.sh -o migrate-to-v3.sh
+bash migrate-to-v3.sh
+```
+
+The migration script:
+1. Backs up your `.env` and `reference/*.md` files
+2. Connects to the new repo (initializes git if needed)
+3. Pulls the latest structure (skills, prompts, instructions)
+4. Restores your reference data (now gitignored — safe from future pulls)
+5. Disables push (one-way sync — prevents accidental upload of tenant data)
+
+---
+
+## 🔄 Receiving Updates
+
+### Automatic (VS Code)
+A background task runs `git pull --ff-only` every time the workspace opens. Updated skills, prompts, and instructions arrive silently.
+
+### Manual
+```bash
+git pull --ff-only
+```
+
+### What updates vs what stays local
+
+| Updated automatically | Never overwritten |
+|----------------------|-------------------|
+| `skills/*.md` (synced weekly from [dynatrace-for-ai](https://github.com/Dynatrace/dynatrace-for-ai)) | `.env` — your credentials |
+| `CLAUDE.md`, `.github/copilot-instructions.md` | `reference/*.md` — your cached tenant data |
+| `.github/prompts/*` — slash commands | `report/` — your generated reports |
+| `example/*` — dashboards & workflows | |
+
+> **Push is disabled by design.** After migration, `git push` is blocked to prevent accidental upload of customer data.
+
+### Adding Custom Skills
+Add your own skills to `skills/` and register them in `skills-lock.json` with `"source": "custom"`. The upstream sync **only touches files sourced from `dynatrace/dynatrace-for-ai`** — custom skills are never overwritten.
+
+---
+
+## 🔌 Supported AI Clients
 
 | Client | Config File | Loads `.env` Via |
 |--------|-------------|-----------------|
 | **VS Code + GitHub Copilot** | `.vscode/mcp.json` | VS Code `envFile` (native) |
 | **Claude Code** (CLI / desktop / IDE) | `.mcp.json` | `bash -c "source .env && ..."` |
 
-> ⚠️ **Claude Code reads `.mcp.json` at the workspace root — not `.claude/settings.json`.** A `mcpServers` block in `.claude/settings.json` is silently ignored by Claude Code. `.claude/settings.json` is used only for `enableAllProjectMcpServers: true` (auto-approves the project server so users skip the trust prompt).
+> Both configs are included. Configure `.env` once — works for both.
+>
+> ⚠️ **Claude Code reads `.mcp.json` at the workspace root — not `.claude/settings.json`.** `.claude/settings.json` is only for `enableAllProjectMcpServers: true` (auto-approval).
 
-### Prerequisites
-- **Node.js 18+** installed
-- Choose your AI client:
-  - **VS Code + GitHub Copilot** — Chat extension enabled
-  - **Claude Code** — `npm install -g @anthropic-ai/claude-code`
-- **Dynatrace Platform Token** with required scopes
+### Token Scopes
 
-### Step 1: Create Your .env File
+Create a Platform Token in Dynatrace with:
 
-Copy `.env.example` to `.env` and configure:
+| Scope | Required For |
+|-------|-------------|
+| `app-engine:apps:run` | MCP server |
+| `storage:logs:read` | Log queries |
+| `storage:events:read` | Event queries |
+| `storage:spans:read` | Trace/span queries |
+| `storage:bizevents:read` | Business events |
+| `storage:metrics:read` | Metric queries |
+| `storage:entities:read` | Entity lookups |
+| `storage:user.sessions:read` | RUM sessions (optional) |
+| `storage:user.events:read` | RUM events (optional) |
+| `storage:security.vulnerabilities:read` | Vulnerabilities (optional) |
+| `storage:problems:read` | Davis problems (optional) |
 
-```bash
-cp .env.example .env
-```
+### Feature Flags
 
-Edit `.env` with your Dynatrace credentials:
-```dotenv
-# Your Dynatrace Platform URL (use apps.dynatrace.com format)
-DT_ENVIRONMENT=https://abc12345.apps.dynatrace.com
+| Flag | Default | What It Does |
+|------|---------|-------------|
+| `MCP_GRAIL_ONLY=yes` | `yes` | Gen 3 Grail DQL only. Set `no` for Gen 2 USQL. |
+| `MCP_USE_USER_VARIABLE=yes` | `yes` | Include `user.id` on tracking events. |
+| `MCP_SEND_TRACKING_EVENTS=yes` | `yes` | Send CUSTOM_INFO event after every query. |
 
-# Platform Token with required scopes
-DT_PLATFORM_TOKEN=YOUR_PLATFORM_TOKEN_HERE
+### Placeholder Replacement
 
-# Feature flags (yes/no) - see Feature Flags section below
-MCP_GRAIL_ONLY=yes
-MCP_USE_USER_VARIABLE=yes
-MCP_SEND_TRACKING_EVENTS=yes
-```
-
-### Step 2: Required Token Scopes
-
-Create a Platform Token in Dynatrace with these scopes:
-
-**Core Data Access:**
-- `app-engine:apps:run`
-- `storage:logs:read`
-- `storage:events:read`
-- `storage:spans:read`
-- `storage:bizevents:read`
-- `storage:metrics:read`
-- `storage:entities:read`
-
-**RUM/Session Analytics (if using Real User Monitoring):**
-- `storage:user.sessions:read` - Gen3 session analytics (cheaper than user.events!)
-- `storage:user.events:read` - RUM events (JS errors, navigations, interactions)
-
-**Security/Problems (if needed):**
-- `storage:security.vulnerabilities:read` - Vulnerability data
-- `storage:problems:read` - Davis problem data
-
-**Note:** Use `user.sessions` (dot-notation) for session-level aggregates. It's much cheaper than `user.events` for device/geo/engagement analysis.
-
-### Step 3: Verify MCP Connection
-
-**VS Code + GitHub Copilot:**
-1. Open VS Code in this workspace (`code .`)
-2. The MCP server starts automatically via `.vscode/mcp.json`
-3. Ask in Copilot Chat: *"What Dynatrace environment am I connected to?"*
-
-**Claude Code (macOS/Linux):**
-1. Run `claude` from the workspace root (the folder containing `.env` and `.mcp.json`)
-2. The MCP server starts automatically via `.mcp.json`
-3. Ask: *"What Dynatrace environment am I connected to?"*
-
-> **Using the VS Code extension?** After cloning/opening, run **Developer: Reload Window** (`Cmd/Ctrl+Shift+P`) so the extension reads `.mcp.json` (only loaded at session start), then check `/mcp` to confirm `dynatrace-mcp-server` is connected.
-
-**Claude Code (Windows):**
-```powershell
-# Export .env variables to your session first
-Get-Content .env | Where-Object { $_ -notmatch '^#' -and $_ -ne '' } | ForEach-Object {
-    $k, $v = $_ -split '=', 2; [System.Environment]::SetEnvironmentVariable($k, $v)
-}
-claude
-```
-
----
-
-## �🚀 Quick Start
-
-### Step 1: Configure for Your Client
-
-Replace these placeholders throughout all files:
+Replace these in `CLAUDE.md` and `copilot-instructions.md`:
 
 | Placeholder | Replace With | Example |
 |-------------|--------------|---------|
 | `[CLIENT_NAME]` | Customer name | "Acme Corporation" |
 | `[TENANT_ID]` | Dynatrace tenant ID | "abc12345" |
-| `[DATE]` | Current date | "30 January 2026" |
 | `[INDUSTRY]` | Customer industry | "E-commerce" |
 | `[WEBSITE_URL]` | Customer website | "www.acme.com" |
 
-Or ask AI to Prompt for all and replace the placeholders where required
-
-### Feature Flags
-
-Three `.env` flags control AI assistant behaviour:
-
-| Flag | Default | What It Does |
-|------|---------|-------------|
-| `MCP_GRAIL_ONLY=yes` | `yes` | **Gen 3 only** — AI uses only Grail DQL via MCP tools. Set to `no` to also enable Gen 2 USQL and classic API calls (requires `DT_GEN2_API_TOKEN`). |
-| `MCP_USE_USER_VARIABLE=yes` | `yes` | **User tracking** — AI resolves `MCP_USER_ID` at session start and includes `user.id` on all tracking events. Set to `no` to skip user identity entirely. |
-| `MCP_SEND_TRACKING_EVENTS=yes` | `yes` | **Query telemetry** — AI sends a CUSTOM_INFO event to Dynatrace after every MCP query. Set to `no` to disable all tracking events. |
-
-### Step 2: Copy to New Location
-
-```bash
-git clone https://github.com/mf-dynatrace/dt-mcp-workspace.git my-client-workspace
-cd my-client-workspace
-bash setup.sh
-```
-
-### Step 3: Initial Data Discovery
-
-Start your first session by running these FREE queries:
-1. `find_entity_by_name` - Discover entities
-2. `list_problems` - Check active problems
-3. BizEvents summary query - Discover event types
-4. Metrics discovery query - Find available metrics
-
-### Step 4: Populate Reference Files
-
-As you discover data, update the reference files:
-- Add entities to `reference/Entities_Reference.md`
-- Add event types to `reference/BizEvents_Reference.md`
-- Add span patterns to `reference/Spans_Reference.md`
-- Add error patterns to `reference/Logs_Reference.md`
-- Add metrics to `reference/Metrics_Reference.md`
+> **Tip:** Ask your AI: *"Replace all placeholders — prompt me for values before writing"*
 
 ---
 
@@ -190,48 +169,30 @@ dt-mcp-workspace/
 
 ## 📊 MCP Query Tracking
 
-### Overview
-When `MCP_SEND_TRACKING_EVENTS=yes` (default), all MCP queries are automatically tracked via `send_event` (CUSTOM_INFO events). This provides:
+When `MCP_SEND_TRACKING_EVENTS=yes` (default), AI assistants automatically send a CUSTOM_INFO event after every MCP query, providing:
 - Complete visibility into MCP query usage
 - Cost tracking and budget monitoring
 - User-level consumption analytics *(when `MCP_USE_USER_VARIABLE=yes`)*
-- Query optimization insights
-
-**When `MCP_SEND_TRACKING_EVENTS=no`:** Tracking is completely disabled. No events are sent.
 
 ### Setup
-1. Set `MCP_SEND_TRACKING_EVENTS=yes` in your `.env` file (default)
-2. Set `MCP_USER_ID` in your `.env` file to identify your queries *(if `MCP_USE_USER_VARIABLE=yes`)*
+1. Set `MCP_SEND_TRACKING_EVENTS=yes` in `.env` (default)
+2. Set `MCP_USER_ID` to identify your queries
 3. Import `example/MCP_Query_Usage_Dashboard.json` into Dynatrace
-4. AI assistants will automatically send tracking events after each query
 
-### How It Works
-After every MCP query (execute_dql, list_problems, find_entity_by_name, etc.), the AI sends a tracking event:
-```
-event.name: "MCP Query Execution"
-event.type: CUSTOM_INFO
-properties:
-  query.bytes_scanned: "0.84"
-  query.cost_usd: "0.042"
-  user.id: "your.email@company.com"
-  ...
-```
-
-### Dashboard Queries
-Query tracking events with:
+### Query tracking events
 ```dql
 fetch events
 | filter event.type == "CUSTOM_INFO" and event.name == "MCP Query Execution"
 ```
 
-See [reference/mcp_query_tracking_schema.md](reference/mcp_query_tracking_schema.md) for full event schema.
+See `reference/mcp_query_tracking_schema.template.md` for full event schema.
 
 ---
 
 ## 🎯 Core Principles
 
 ### 1. Cost Optimization
-- **Query Priority:** FREE tools first, expensive queries last
+- **Query Priority:** FREE tools first (`find_entity_by_name`, `list_problems`, `timeseries`), expensive queries last
 - **Timeframes:** Start with 24h, extend only if needed
 - **Filters:** Always filter by event.type/entity before other filters
 - **Aggregation:** Use summarize, not raw data
@@ -245,40 +206,6 @@ See [reference/mcp_query_tracking_schema.md](reference/mcp_query_tracking_schema
 - **Read First:** Always read reference files before querying
 - **Check Existing Data:** Data may already be documented
 - **Incremental Updates:** Add new learnings to existing docs
-
----
-
-## 🔄 Receiving Updates
-
-### Automatic (VS Code)
-When you open the workspace in VS Code, a background task runs `git pull --ff-only` to fetch the latest skills, prompts, and instruction updates. Your local data (`.env`, `reference/*.md`, `report/`) is gitignored and will **not** be affected.
-
-### Manual
-```bash
-cd my-client-workspace
-git pull --ff-only
-```
-
-### What updates include
-- **Skills** — synced weekly from [dynatrace-for-ai](https://github.com/Dynatrace/dynatrace-for-ai) via GitHub Actions
-- **Prompts** — reusable slash commands in `.github/prompts/`
-- **Instructions** — `CLAUDE.md`, `.github/copilot-instructions.md`
-- **Examples** — dashboard and workflow templates
-
-### What is never overwritten
-- `.env` — your credentials
-- `reference/*.md` — your tenant-specific cached data
-- `report/` — your generated reports
-
-### Adding Custom Skills
-Custom skills live alongside upstream skills in `skills/` and are tracked in `skills-lock.json` with `"source": "custom"`. The upstream sync action **only touches files sourced from `dynatrace/dynatrace-for-ai`** — your custom skills are never overwritten.
-
-### Migrating from MCP-cleanDeploy
-If you have an existing clone of `MCP-cleanDeploy`, run the one-time migration script:
-```bash
-bash migrate-to-v3.sh
-```
-This backs up your reference data, pulls the new structure, and restores your files (now safely gitignored).
 
 ---
 
@@ -297,22 +224,15 @@ This backs up your reference data, pulls the new structure, and restores your fi
 
 ---
 
-## ✅ Checklist for New Deployments
+## ✅ First Session Checklist
 
-- [ ] Copy `.env.example` to `.env`
-- [ ] Configure `DT_ENVIRONMENT` with your tenant URL
-- [ ] Configure `DT_PLATFORM_TOKEN` with required scopes
-- [ ] Set feature flags (`MCP_GRAIL_ONLY`, `MCP_USE_USER_VARIABLE`, `MCP_SEND_TRACKING_EVENTS`)
-- [ ] Verify MCP connection (VS Code Copilot **or** Claude Code — "What environment am I connected to?")
-- [ ] Replace all `[PLACEHOLDER]` values in reference files
-- [ ] Keep `.github/copilot-instructions.md` (for Copilot)
-- [ ] Keep `.mcp.json` + `.claude/settings.json` (for Claude Code)
-- [ ] Run initial entity discovery
-- [ ] Run BizEvents summary query
-- [ ] Populate `reference/Entities_Reference.md` with discovered entities
-- [ ] Populate `reference/BizEvents_Reference.md` with event types
-- [ ] Test a sample dashboard query
-- [ ] (Optional) Copy example dashboards to `example/` folder
+- [ ] `.env` configured with credentials
+- [ ] Connection verified ("What environment am I connected to?")
+- [ ] Placeholders replaced in `CLAUDE.md` and `copilot-instructions.md`
+- [ ] Run `find_entity_by_name` to discover key services (FREE)
+- [ ] Update `reference/Entities_Reference.md` with discovered IDs
+- [ ] Run a BizEvents summary to discover event types
+- [ ] Update `reference/BizEvents_Reference.md`
 
 ---
 
@@ -336,37 +256,20 @@ Modify `AI_Prompt.md` to include:
 
 ---
 
-## 📝 Maintenance
-
-### Regular Updates
-- Review and clean up reference files monthly
-- Archive outdated patterns
-- Update cost baselines as data volumes change
-
-### Version Control
-- Commit reference file updates frequently
-- Tag stable versions before major changes
-- Keep changelog of significant discoveries
-
----
-
 ## 🆘 Troubleshooting
 
-### High Query Costs
-1. Check if entity ID is cached in `Entities_Reference.md`
-2. Verify using metrics instead of spans where possible
-3. Reduce timeframe to 24h for exploration
-4. Add more filters before executing
-
-### Missing Data
-1. Run discovery queries (event types, metrics)
-2. Check semantic dictionary for available fields
-3. Verify entity exists with `find_entity_by_name`
-
-### Copilot Not Following Instructions
-1. Ensure `.github/copilot-instructions.md` is in workspace root
-2. Check file is properly formatted (Markdown)
-3. Restart Copilot session
+| Problem | Fix |
+|---------|-----|
+| MCP not connecting (VS Code) | Check `DT_ENVIRONMENT` URL format (`*.apps.dynatrace.com`); reload window |
+| MCP not connecting (Claude Code) | Confirm `.mcp.json` at workspace root; run `claude` from that folder |
+| MCP not connecting (Windows) | `bash` must be on PATH (Git for Windows); or pre-export `.env` vars |
+| Auth errors | Verify token scopes match table above |
+| "Not authorized for table" | Add missing `storage:*:read` scope to token |
+| Copilot ignoring instructions | Ensure `.github/copilot-instructions.md` at workspace root |
+| Claude ignoring instructions | Ensure `CLAUDE.md` at workspace root |
+| High query costs | Read `reference/MCP_Query_Optimization_Guide.md` |
+| `git push` fails | By design — workspace is pull-only after migration |
+| Untracked files after upgrade | Gitignored files are safe; local-only data won't be pushed |
 
 ---
 
@@ -375,3 +278,5 @@ Modify `AI_Prompt.md` to include:
 - [Dynatrace DQL Documentation](https://docs.dynatrace.com/docs/platform/grail/dynatrace-query-language)
 - [Dynatrace Gen 3 Dashboards](https://docs.dynatrace.com/docs/observe-and-explore/dashboards-new)
 - [Dynatrace BizEvents](https://docs.dynatrace.com/docs/platform/grail/data-model/business-events)
+- [Dynatrace Semantic Dictionary](https://docs.dynatrace.com/docs/shortlink/semantic-dictionary)
+- [dynatrace-for-ai Skills](https://github.com/Dynatrace/dynatrace-for-ai) — upstream skill source
