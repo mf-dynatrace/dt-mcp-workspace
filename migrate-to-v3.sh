@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# migrate-to-v3.sh — One-time migration for existing MCP-cleanDeploy clones
+# migrate-to-v3.sh — One-time migration for existing MCP-cleanDeploy workspaces
+# Handles both git-cloned repos AND folder-copied workspaces (no .git)
 # Migrates to the new dt-mcp-workspace structure with auto-updating skills
 set -euo pipefail
 
+REPO_URL="https://github.com/mf-dynatrace/dt-mcp-workspace.git"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
@@ -10,9 +12,10 @@ echo "🔄 dt-mcp-workspace — Migration from MCP-cleanDeploy"
 echo "======================================================"
 echo ""
 echo "This script will:"
-echo "  1. Back up your existing reference files (with all your cached data)"
-echo "  2. Pull the latest repo structure"
-echo "  3. Restore your reference files (now gitignored — safe from future pulls)"
+echo "  1. Back up your existing reference files and .env"
+echo "  2. Connect to (or initialize) the dt-mcp-workspace repo"
+echo "  3. Pull the latest structure (skills, prompts, instructions)"
+echo "  4. Restore your reference files (now gitignored — safe from future pulls)"
 echo ""
 
 # --- 1. Back up reference files ---
@@ -39,18 +42,47 @@ else
 fi
 echo ""
 
-# --- 3. Pull latest from remote ---
-echo "⬇️  Pulling latest repo structure..."
-if git pull --ff-only 2>/dev/null; then
-  echo "   ✅ Pull successful"
-else
-  echo "   ⚠️  Fast-forward pull failed. Trying merge..."
-  if git pull --no-rebase 2>/dev/null; then
-    echo "   ✅ Pull with merge successful"
+# --- 3. Connect to repo and pull ---
+if [ -d .git ]; then
+  # Already a git repo — update remote and pull
+  current_remote=$(git remote get-url origin 2>/dev/null || echo "")
+  if [ "$current_remote" != "$REPO_URL" ]; then
+    echo "🔗 Updating remote origin to dt-mcp-workspace..."
+    git remote set-url origin "$REPO_URL" 2>/dev/null || git remote add origin "$REPO_URL"
+    echo "   ✅ Remote updated"
+  fi
+  echo ""
+
+  echo "⬇️  Pulling latest repo structure..."
+  if git fetch origin && git reset --hard origin/main; then
+    git branch --set-upstream-to=origin/main main 2>/dev/null || true
+    echo "   ✅ Pull successful"
   else
-    echo "   ❌ Pull failed — resolve conflicts manually, then re-run this script"
+    echo "   ❌ Pull failed — check your network connection and try again"
     exit 1
   fi
+else
+  # Not a git repo — initialize and connect
+  echo "📂 No .git directory found — initializing git repo..."
+  git init
+  git remote add origin "$REPO_URL"
+  echo "   ✅ Git initialized"
+  echo ""
+
+  echo "⬇️  Fetching dt-mcp-workspace..."
+  if git fetch origin; then
+    echo "   ✅ Fetch successful"
+  else
+    echo "   ❌ Fetch failed — check your network connection and try again"
+    exit 1
+  fi
+
+  echo "📥 Applying latest workspace structure..."
+  git checkout origin/main -- . 2>/dev/null || true
+  git checkout -b main 2>/dev/null || git checkout main 2>/dev/null || true
+  git branch --set-upstream-to=origin/main main 2>/dev/null || true
+  git reset origin/main 2>/dev/null || true
+  echo "   ✅ Workspace updated"
 fi
 echo ""
 
