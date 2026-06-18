@@ -121,7 +121,13 @@ echo ""
 # --- 6. Create report directory ---
 mkdir -p report
 
-# --- 7. Run setup for anything else ---
+# --- 7. Disable push (one-way sync only) ---
+echo "🔒 Setting repo to pull-only (prevents accidental push of tenant data)..."
+git remote set-url --push origin PUSH_DISABLED_USE_PULL_ONLY
+echo "   ✅ Push disabled — this workspace will only receive updates, never send"
+echo ""
+
+# --- 8. Run setup for anything else ---
 if [ -f setup.sh ]; then
   echo "🔧 Running setup checks..."
   bash setup.sh 2>/dev/null | grep -E "^(✅|⚠️|❌)" || true

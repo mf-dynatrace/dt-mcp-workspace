@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.*.local
+.env.backup-*
 
 # Keep the example file
 !.env.example
@@ -10,6 +11,9 @@
 # Templates are tracked; actual reference files are local-only
 reference/*.md
 !reference/*.template.md
+
+# Migration backups
+.reference-backup-*
 
 # Generated reports (tenant-specific)
 report/
