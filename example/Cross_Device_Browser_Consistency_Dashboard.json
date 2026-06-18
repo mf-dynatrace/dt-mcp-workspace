@@ -1,0 +1,2192 @@
+{
+  "version": 20,
+  "variables": [
+    {
+      "key": "app",
+      "type": "query",
+      "label": "Application",
+      "defaultValue": "[APP_NAME]",
+      "input": "smartscapeNodes \"FRONTEND\" | fields name | sort name asc",
+      "multiple": false,
+      "includeAll": false
+    }
+  ],
+  "tiles": {
+    "0": {
+      "type": "markdown",
+      "content": "# 📊 Cross-Device & Cross-Browser Experience Consistency\n\n**Application:** Selected via dashboard variable | **SLO Standard:** Google Core Web Vitals P75 | **Data Source:** Gen 3 RUM (`user.events`)\n\nThis dashboard ensures **consistent performance and functionality across devices, browsers, operating systems, and regions**. It surfaces gaps in experience quality so teams can prioritise fixes that improve reliability and reduce QA effort.\n\n| Section | What It Answers |\n|---------|----------------|\n| **Traffic Distribution** | Where are our visitors coming from? (device, browser, OS, country) |\n| **Device Consistency** | Do mobile guests get the same performance as desktop? |\n| **Browser Consistency** | Does Chrome perform differently from Safari or Firefox? |\n| **OS Consistency** | Are iOS users impacted differently from Android or Windows? |\n| **Geographic Consistency** | Do visitors in different countries experience slower server response? |\n| **Error Consistency** | Are errors concentrated on specific device/browser combos? |\n| **Viewport Analysis** | Does performance vary by screen size / responsive breakpoint? |\n\n🟢 **Good** — meets CWV SLO    🟡 **Needs Work** — approaching threshold    🔴 **Poor** — failing SLO"
+    },
+    "1": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Traffic Distribution — Where Are Visitors Coming From?\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "UsersIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#134FC9",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "2": {
+      "title": "📱 Sessions by Device Type",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize Sessions = countDistinct(dt.rum.session.id), by:{device.type}\n| sort Sessions desc",
+      "visualization": "donutChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "circleChartSettings": {
+            "valueType": "relative",
+            "showTotalValue": true
+          },
+          "legend": {
+            "position": "bottom"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 5,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "3": {
+      "title": "🌐 Sessions by Browser",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize Sessions = countDistinct(dt.rum.session.id), by:{browser.name}\n| sort Sessions desc\n| limit 10",
+      "visualization": "donutChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "circleChartSettings": {
+            "valueType": "relative",
+            "showTotalValue": true
+          },
+          "legend": {
+            "position": "bottom"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 5,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "4": {
+      "title": "💻 Sessions by Operating System",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize Sessions = countDistinct(dt.rum.session.id), by:{os.name}\n| sort Sessions desc\n| limit 10",
+      "visualization": "donutChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "circleChartSettings": {
+            "valueType": "relative",
+            "showTotalValue": true
+          },
+          "legend": {
+            "position": "bottom"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 5,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "5": {
+      "title": "🌍 Sessions by Country",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize Sessions = countDistinct(dt.rum.session.id), by:{geo.country.iso_code}\n| sort Sessions desc\n| limit 10",
+      "visualization": "donutChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "circleChartSettings": {
+            "valueType": "relative",
+            "showTotalValue": true
+          },
+          "legend": {
+            "position": "bottom"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 5,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "6": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Device Type — Performance Consistency (Mobile vs Desktop vs Tablet)\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "DeviceMobileIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#2AB6F4",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "7": {
+      "title": "📱 Core Web Vitals P75 by Device Type",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize \n    Sessions = countDistinct(dt.rum.session.id),\n    LCP_P75 = toDouble(percentile(web_vitals.largest_contentful_paint, 75) / 1000000),\n    CLS_P75 = toDouble(percentile(web_vitals.cumulative_layout_shift, 75)),\n    INP_P75 = toDouble(percentile(web_vitals.interaction_to_next_paint, 75) / 1000000),\n    FCP_P75 = toDouble(percentile(web_vitals.first_contentful_paint, 75) / 1000000),\n    TTFB_P75 = toDouble(percentile(web_vitals.time_to_first_byte, 75) / 1000000),\n    by:{device.type}\n| fieldsAdd \n    LCP_SLO = if(LCP_P75 <= 2500.0, \"✅\", else:\"❌\"),\n    CLS_SLO = if(CLS_P75 <= 0.1, \"✅\", else:\"❌\"),\n    INP_SLO = if(INP_P75 <= 200.0, \"✅\", else:\"❌\")\n| fieldsRename Device = device.type\n| sort Sessions desc\n| fields Device, Sessions, LCP_P75, LCP_SLO, CLS_P75, CLS_SLO, INP_P75, INP_SLO, FCP_P75, TTFB_P75",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "LCP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 2500
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 4000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 4000
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "field": "CLS_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 0.1
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 0.25
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 0.25
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "field": "INP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 200
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 500
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "field": "FCP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 1800
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 3000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 3000
+              }
+            ]
+          },
+          {
+            "id": 5,
+            "field": "TTFB_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 800
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 1800
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 1800
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 5,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "8": {
+      "title": "📈 LCP P75 by Device Type — 30-Day Trend (ms)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-30d\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.largest_contentful_paint)\n| summarize lcp_p75 = percentile(web_vitals.largest_contentful_paint, 75) / 1000000, by:{day = bin(start_time, 1d), device.type}\n| makeTimeseries lcp_p75 = avg(lcp_p75), time:{day}, by:{device.type}, interval:1d",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "chartSettings": {
+          "legend": {
+            "position": "bottom"
+          },
+          "fieldMapping": {
+            "leftAxisValues": [
+              "lcp_p75"
+            ],
+            "timestamp": "timeframe"
+          },
+          "curve": "smooth"
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "lcp_p75",
+            "title": "SLO: 2500ms",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": "≥",
+                "value": 2500
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 10,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "9": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Browser — Performance Consistency\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "GlobeIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#7C38BC",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "10": {
+      "title": "🌐 Core Web Vitals P75 by Browser",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize \n    Sessions = countDistinct(dt.rum.session.id),\n    LCP_P75 = toDouble(percentile(web_vitals.largest_contentful_paint, 75) / 1000000),\n    CLS_P75 = toDouble(percentile(web_vitals.cumulative_layout_shift, 75)),\n    INP_P75 = toDouble(percentile(web_vitals.interaction_to_next_paint, 75) / 1000000),\n    FCP_P75 = toDouble(percentile(web_vitals.first_contentful_paint, 75) / 1000000),\n    TTFB_P75 = toDouble(percentile(web_vitals.time_to_first_byte, 75) / 1000000),\n    by:{browser.name}\n| fieldsAdd \n    LCP_SLO = if(LCP_P75 <= 2500.0, \"✅\", else:\"❌\"),\n    CLS_SLO = if(CLS_P75 <= 0.1, \"✅\", else:\"❌\"),\n    INP_SLO = if(INP_P75 <= 200.0, \"✅\", else:\"❌\")\n| fieldsRename Browser = browser.name\n| sort Sessions desc\n| limit 10\n| fields Browser, Sessions, LCP_P75, LCP_SLO, CLS_P75, CLS_SLO, INP_P75, INP_SLO, FCP_P75, TTFB_P75",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "LCP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 2500
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 4000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 4000
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "field": "CLS_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 0.1
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 0.25
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 0.25
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "field": "INP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 200
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 500
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "field": "FCP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 1800
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 3000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 3000
+              }
+            ]
+          },
+          {
+            "id": 5,
+            "field": "TTFB_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 800
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 1800
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 1800
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 5,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "11": {
+      "title": "📈 LCP P75 by Browser — 30-Day Trend (ms)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-30d\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.largest_contentful_paint)\n| summarize lcp_p75 = percentile(web_vitals.largest_contentful_paint, 75) / 1000000, by:{day = bin(start_time, 1d), browser.name}\n| makeTimeseries lcp_p75 = avg(lcp_p75), time:{day}, by:{browser.name}, interval:1d",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "chartSettings": {
+          "legend": {
+            "position": "bottom"
+          },
+          "fieldMapping": {
+            "leftAxisValues": [
+              "lcp_p75"
+            ],
+            "timestamp": "timeframe"
+          },
+          "curve": "smooth"
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "lcp_p75",
+            "title": "SLO: 2500ms",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": "≥",
+                "value": 2500
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 10,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "12": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Operating System — Performance Consistency\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "ServerIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#4FD5B0",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "13": {
+      "title": "💻 Core Web Vitals P75 by Operating System",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize \n    Sessions = countDistinct(dt.rum.session.id),\n    LCP_P75 = toDouble(percentile(web_vitals.largest_contentful_paint, 75) / 1000000),\n    CLS_P75 = toDouble(percentile(web_vitals.cumulative_layout_shift, 75)),\n    INP_P75 = toDouble(percentile(web_vitals.interaction_to_next_paint, 75) / 1000000),\n    FCP_P75 = toDouble(percentile(web_vitals.first_contentful_paint, 75) / 1000000),\n    TTFB_P75 = toDouble(percentile(web_vitals.time_to_first_byte, 75) / 1000000),\n    by:{os.name}\n| fieldsAdd \n    LCP_SLO = if(LCP_P75 <= 2500.0, \"✅\", else:\"❌\"),\n    CLS_SLO = if(CLS_P75 <= 0.1, \"✅\", else:\"❌\"),\n    INP_SLO = if(INP_P75 <= 200.0, \"✅\", else:\"❌\")\n| fieldsRename OS = os.name\n| sort Sessions desc\n| limit 10\n| fields OS, Sessions, LCP_P75, LCP_SLO, CLS_P75, CLS_SLO, INP_P75, INP_SLO, FCP_P75, TTFB_P75",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "LCP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 2500
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 4000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 4000
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "field": "CLS_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 0.1
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 0.25
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 0.25
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "field": "INP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 200
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 500
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "field": "FCP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 1800
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 3000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 3000
+              }
+            ]
+          },
+          {
+            "id": 5,
+            "field": "TTFB_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 800
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 1800
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 1800
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 5,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "14": {
+      "title": "📈 LCP P75 by Operating System — 30-Day Trend (ms)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-30d\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.largest_contentful_paint)\n| summarize lcp_p75 = percentile(web_vitals.largest_contentful_paint, 75) / 1000000, by:{day = bin(start_time, 1d), os.name}\n| makeTimeseries lcp_p75 = avg(lcp_p75), time:{day}, by:{os.name}, interval:1d",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "chartSettings": {
+          "legend": {
+            "position": "bottom"
+          },
+          "fieldMapping": {
+            "leftAxisValues": [
+              "lcp_p75"
+            ],
+            "timestamp": "timeframe"
+          },
+          "curve": "smooth"
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "lcp_p75",
+            "title": "SLO: 2500ms",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": "≥",
+                "value": 2500
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 10,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "15": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Geographic — Performance Consistency by Country\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "LocationIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#FF6900",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "16": {
+      "title": "🌍 Core Web Vitals P75 by Country (min 10 sessions)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize \n    Sessions = countDistinct(dt.rum.session.id),\n    LCP_P75 = toDouble(percentile(web_vitals.largest_contentful_paint, 75) / 1000000),\n    CLS_P75 = toDouble(percentile(web_vitals.cumulative_layout_shift, 75)),\n    INP_P75 = toDouble(percentile(web_vitals.interaction_to_next_paint, 75) / 1000000),\n    FCP_P75 = toDouble(percentile(web_vitals.first_contentful_paint, 75) / 1000000),\n    TTFB_P75 = toDouble(percentile(web_vitals.time_to_first_byte, 75) / 1000000),\n    by:{geo.country.iso_code}\n| fieldsAdd \n    LCP_SLO = if(LCP_P75 <= 2500.0, \"✅\", else:\"❌\"),\n    INP_SLO = if(INP_P75 <= 200.0, \"✅\", else:\"❌\")\n| fieldsRename Country = geo.country.iso_code\n| filter Sessions >= 10\n| sort Sessions desc\n| limit 15\n| fields Country, Sessions, LCP_P75, LCP_SLO, INP_P75, INP_SLO, CLS_P75, FCP_P75, TTFB_P75",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "LCP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 2500
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 4000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 4000
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "field": "CLS_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 0.1
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 0.25
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 0.25
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "field": "INP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 200
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 500
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "field": "FCP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 1800
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 3000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 3000
+              }
+            ]
+          },
+          {
+            "id": 5,
+            "field": "TTFB_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 800
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 1800
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 1800
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 5,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "17": {
+      "title": "🖥️ TTFB P75 by Country — Slowest 10 (ms)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.time_to_first_byte)\n| summarize TTFB_P75 = toDouble(percentile(web_vitals.time_to_first_byte, 75) / 1000000), Sessions = countDistinct(dt.rum.session.id), by:{geo.country.iso_code}\n| filter Sessions >= 10\n| sort TTFB_P75 desc\n| limit 10\n| fieldsRename Country = geo.country.iso_code",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "position": "bottom"
+          },
+          "fieldMapping": {
+            "categoryAxisValues": [
+              "Country"
+            ],
+            "leftAxisValues": [
+              "TTFB_P75"
+            ]
+          },
+          "categoricalBarChartSettings": {
+            "categoryAxisTickRotation": "auto"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": [
+                "TTFB_P75"
+              ],
+              "override": {
+                "color": "#FF6900"
+              }
+            }
+          ]
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "TTFB_P75",
+            "title": "SLO: 800ms",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": "≥",
+                "value": 800
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 5,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "18": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Error Consistency — Are Errors Concentrated on Specific Devices or Browsers?\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "WarningIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#C62239",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "19": {
+      "title": "⚠️ Errors by Device Type",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"error\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize Errors = count(), Sessions = countDistinct(dt.rum.session.id), by:{device.type}\n| fieldsAdd Errors_Per_Session = round(toDouble(Errors) / toDouble(Sessions), decimals:2)\n| fieldsRename Device = device.type\n| sort Errors desc",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "position": "bottom"
+          },
+          "fieldMapping": {
+            "categoryAxisValues": [
+              "Device"
+            ],
+            "leftAxisValues": [
+              "Errors"
+            ]
+          },
+          "categoricalBarChartSettings": {
+            "categoryAxisTickRotation": "auto"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 5,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "20": {
+      "title": "⚠️ Errors by Browser",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"error\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize Errors = count(), Sessions = countDistinct(dt.rum.session.id), by:{browser.name}\n| fieldsAdd Errors_Per_Session = round(toDouble(Errors) / toDouble(Sessions), decimals:2)\n| fieldsRename Browser = browser.name\n| sort Errors desc\n| limit 10",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "position": "bottom"
+          },
+          "fieldMapping": {
+            "categoryAxisValues": [
+              "Browser"
+            ],
+            "leftAxisValues": [
+              "Errors"
+            ]
+          },
+          "categoricalBarChartSettings": {
+            "categoryAxisTickRotation": "auto"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 5,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "21": {
+      "title": "🔴 Top 20 Errors by Device + Browser Combination",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"error\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize Errors = count(), Sessions = countDistinct(dt.rum.session.id), by:{device.type, browser.name, error.name, error.type}\n| fieldsAdd Errors_Per_Session = round(toDouble(Errors) / toDouble(Sessions), decimals:2)\n| fieldsRename Device = device.type, Browser = browser.name, Error = error.name, Type = error.type\n| sort Errors desc\n| limit 20\n| fields Device, Browser, Type, Error, Errors, Sessions, Errors_Per_Session",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 5,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "22": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Viewport / Screen Size — Performance by Responsive Breakpoint\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "GridIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#134FC9",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "23": {
+      "title": "📐 Core Web Vitals P75 by Viewport Width Bucket",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| fieldsAdd viewport_bucket = if(browser.window.width <= 480, \"≤480px (Phone)\", else:if(browser.window.width <= 768, \"481-768px (Tablet Portrait)\", else:if(browser.window.width <= 1024, \"769-1024px (Tablet/Small Desktop)\", else:if(browser.window.width <= 1440, \"1025-1440px (Desktop)\", else:\"≥1441px (Large Desktop)\"))))\n| summarize \n    Sessions = countDistinct(dt.rum.session.id),\n    LCP_P75 = toDouble(percentile(web_vitals.largest_contentful_paint, 75) / 1000000),\n    CLS_P75 = toDouble(percentile(web_vitals.cumulative_layout_shift, 75)),\n    INP_P75 = toDouble(percentile(web_vitals.interaction_to_next_paint, 75) / 1000000),\n    FCP_P75 = toDouble(percentile(web_vitals.first_contentful_paint, 75) / 1000000),\n    TTFB_P75 = toDouble(percentile(web_vitals.time_to_first_byte, 75) / 1000000),\n    by:{viewport_bucket}\n| fieldsAdd \n    LCP_SLO = if(LCP_P75 <= 2500.0, \"✅\", else:\"❌\"),\n    CLS_SLO = if(CLS_P75 <= 0.1, \"✅\", else:\"❌\"),\n    INP_SLO = if(INP_P75 <= 200.0, \"✅\", else:\"❌\")\n| fieldsRename Viewport = viewport_bucket\n| sort Sessions desc\n| fields Viewport, Sessions, LCP_P75, LCP_SLO, CLS_P75, CLS_SLO, INP_P75, INP_SLO, FCP_P75, TTFB_P75",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "LCP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 2500
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 4000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 4000
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "field": "CLS_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 0.1
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 0.25
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 0.25
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "field": "INP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 200
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 500
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "field": "FCP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 1800
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 3000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 3000
+              }
+            ]
+          },
+          {
+            "id": 5,
+            "field": "TTFB_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 800
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 1800
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 1800
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 5,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "24": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Consistency Gap Analysis — Biggest Performance Differences\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "TrendUpIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#7C38BC",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "25": {
+      "title": "🔍 CWV by Device + Browser Combo — Worst Performers (min 10 sessions)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize \n    Sessions = countDistinct(dt.rum.session.id),\n    LCP_P75 = toDouble(percentile(web_vitals.largest_contentful_paint, 75) / 1000000),\n    INP_P75 = toDouble(percentile(web_vitals.interaction_to_next_paint, 75) / 1000000),\n    CLS_P75 = toDouble(percentile(web_vitals.cumulative_layout_shift, 75)),\n    by:{device.type, browser.name}\n| filter Sessions >= 10\n| fieldsAdd \n    LCP_SLO = if(LCP_P75 <= 2500.0, \"✅\", else:\"❌\"),\n    INP_SLO = if(INP_P75 <= 200.0, \"✅\", else:\"❌\"),\n    CLS_SLO = if(CLS_P75 <= 0.1, \"✅\", else:\"❌\")\n| fieldsRename Device = device.type, Browser = browser.name\n| sort LCP_P75 desc\n| limit 15\n| fields Device, Browser, Sessions, LCP_P75, LCP_SLO, INP_P75, INP_SLO, CLS_P75, CLS_SLO",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "LCP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 2500
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 4000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 4000
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "field": "CLS_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 0.1
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 0.25
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 0.25
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "field": "INP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 200
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 500
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "field": "FCP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 1800
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 3000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 3000
+              }
+            ]
+          },
+          {
+            "id": 5,
+            "field": "TTFB_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 800
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 1800
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 1800
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 5,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "26": {
+      "title": "📡 Performance by ISP / Network Provider (min 20 sessions)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize \n    Sessions = countDistinct(dt.rum.session.id),\n    LCP_P75 = toDouble(percentile(web_vitals.largest_contentful_paint, 75) / 1000000),\n    TTFB_P75 = toDouble(percentile(web_vitals.time_to_first_byte, 75) / 1000000),\n    INP_P75 = toDouble(percentile(web_vitals.interaction_to_next_paint, 75) / 1000000),\n    by:{client.isp}\n| filter Sessions >= 20\n| fieldsAdd LCP_SLO = if(LCP_P75 <= 2500.0, \"✅\", else:\"❌\")\n| fieldsRename ISP = client.isp\n| sort Sessions desc\n| limit 15\n| fields ISP, Sessions, LCP_P75, LCP_SLO, TTFB_P75, INP_P75",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "LCP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 2500
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 4000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 4000
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "field": "TTFB_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "≤",
+                "value": 800
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≤",
+                "value": 1800
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">",
+                "value": 1800
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 5,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    }
+  },
+  "layouts": {
+    "0": {
+      "x": 0,
+      "y": 0,
+      "w": 24,
+      "h": 5
+    },
+    "1": {
+      "x": 0,
+      "y": 5,
+      "w": 24,
+      "h": 1
+    },
+    "2": {
+      "x": 0,
+      "y": 6,
+      "w": 6,
+      "h": 5
+    },
+    "3": {
+      "x": 6,
+      "y": 6,
+      "w": 6,
+      "h": 5
+    },
+    "4": {
+      "x": 12,
+      "y": 6,
+      "w": 6,
+      "h": 5
+    },
+    "5": {
+      "x": 18,
+      "y": 6,
+      "w": 6,
+      "h": 5
+    },
+    "6": {
+      "x": 0,
+      "y": 11,
+      "w": 24,
+      "h": 1
+    },
+    "7": {
+      "x": 0,
+      "y": 12,
+      "w": 12,
+      "h": 6
+    },
+    "8": {
+      "x": 12,
+      "y": 12,
+      "w": 12,
+      "h": 6
+    },
+    "9": {
+      "x": 0,
+      "y": 18,
+      "w": 24,
+      "h": 1
+    },
+    "10": {
+      "x": 0,
+      "y": 19,
+      "w": 12,
+      "h": 6
+    },
+    "11": {
+      "x": 12,
+      "y": 19,
+      "w": 12,
+      "h": 6
+    },
+    "12": {
+      "x": 0,
+      "y": 25,
+      "w": 24,
+      "h": 1
+    },
+    "13": {
+      "x": 0,
+      "y": 26,
+      "w": 12,
+      "h": 6
+    },
+    "14": {
+      "x": 12,
+      "y": 26,
+      "w": 12,
+      "h": 6
+    },
+    "15": {
+      "x": 0,
+      "y": 32,
+      "w": 24,
+      "h": 1
+    },
+    "16": {
+      "x": 0,
+      "y": 33,
+      "w": 14,
+      "h": 7
+    },
+    "17": {
+      "x": 14,
+      "y": 33,
+      "w": 10,
+      "h": 7
+    },
+    "18": {
+      "x": 0,
+      "y": 40,
+      "w": 24,
+      "h": 1
+    },
+    "19": {
+      "x": 0,
+      "y": 41,
+      "w": 12,
+      "h": 5
+    },
+    "20": {
+      "x": 12,
+      "y": 41,
+      "w": 12,
+      "h": 5
+    },
+    "21": {
+      "x": 0,
+      "y": 46,
+      "w": 24,
+      "h": 7
+    },
+    "22": {
+      "x": 0,
+      "y": 53,
+      "w": 24,
+      "h": 1
+    },
+    "23": {
+      "x": 0,
+      "y": 54,
+      "w": 24,
+      "h": 7
+    },
+    "24": {
+      "x": 0,
+      "y": 61,
+      "w": 24,
+      "h": 1
+    },
+    "25": {
+      "x": 0,
+      "y": 62,
+      "w": 24,
+      "h": 7
+    },
+    "26": {
+      "x": 0,
+      "y": 69,
+      "w": 24,
+      "h": 7
+    }
+  },
+  "importedWithCode": false,
+  "settings": {
+    "defaultTimeframe": {
+      "value": {
+        "from": "now()-24h",
+        "to": "now()"
+      },
+      "enabled": true
+    }
+  }
+}

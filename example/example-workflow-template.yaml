@@ -1,0 +1,43 @@
+metadata:
+  version: '1'
+  dependencies:
+    apps:
+    - id: dynatrace.biz.carbon
+      version: ^1.22.1
+  inputs: []
+workflow:
+  title: 'Carbon Impact: Calculate Carbon'
+  description: Calculate costs and co2e
+  schemaVersion: 3
+  trigger:
+    schedule:
+      isActive: true
+      trigger:
+        cron: 8,38 * * * *
+        type: cron
+      filterParameters:
+        earliestStart: '2025-09-03'
+        earliestStartTime: 00:00
+      timezone: UTC
+      inputs: {}
+  result: null
+  type: STANDARD
+  input: {}
+  hourlyExecutionLimit: 1000
+  guide: null
+  tasks:
+    cost_carbon_calculation:
+      name: cost_carbon_calculation
+      retry:
+        count: 5
+        delay: 30
+        failedLoopIterationsOnly: true
+      action: dynatrace.biz.carbon:v4-calculate-cost-and-carbon
+      position:
+        x: 0
+        y: 1
+      conditions:
+        states: {}
+      description: Calculates host costs and translates host utilization metrics into
+        a CO2 equivalent (CO2e).
+      predecessors: []

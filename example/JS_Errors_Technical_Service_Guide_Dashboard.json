@@ -1,0 +1,287 @@
+{
+  "version": 20,
+  "variables": [],
+  "tiles": {
+    "0": {
+      "type": "markdown",
+      "content": "# \ud83d\udea8 JS Error Rate Spike \u2014 Incident Triage\n\n**Application:** [APP_NAME] (`APPLICATION-XXXXXXXXXXXX`) | **Problem type:** JavaScript error rate increase\n\n**Workflow:** Spike timeline \u2192 Identify the error \u2192 Find the page \u2192 Find the script/domain \u2192 Check exception details\n\n> **Set the timeframe** to match the incident window. Narrow to 2h around the spike for fastest root cause."
+    },
+    "1": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\u23f1 Error Volume & Impact\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "labelMode": "none", "isIconVisible": true, "prefixIcon": "DashboardIcon", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "a", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": "#C62239", "comparator": "!=", "value": "0" }] }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "2": {
+      "title": "\ud83d\udea8 Total Errors",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| summarize total_errors = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": { "label": "ERRORS", "recordField": "total_errors", "colorThresholdTarget": "background" },
+        "thresholds": [{ "id": 1, "field": "total_errors", "title": "", "isEnabled": true, "rules": [
+          { "id": 1, "color": { "Default": "#C62239" }, "comparator": ">=", "value": 100000 },
+          { "id": 2, "color": { "Default": "#F8B000" }, "comparator": ">=", "value": 10000 },
+          { "id": 3, "color": { "Default": "#4FD5B0" }, "comparator": "<", "value": 10000 }
+        ] }],
+        "unitsOverrides": [{ "identifier": "total_errors", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "3": {
+      "title": "\ud83d\udd25 JS Exceptions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\" and error.type == \"exception\"\n| summarize js_exceptions = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": { "label": "JS EXCEPTIONS", "recordField": "js_exceptions", "colorThresholdTarget": "background" },
+        "thresholds": [{ "id": 1, "field": "js_exceptions", "title": "", "isEnabled": true, "rules": [
+          { "id": 1, "color": { "Default": "#C62239" }, "comparator": ">=", "value": 10000 },
+          { "id": 2, "color": { "Default": "#F8B000" }, "comparator": ">=", "value": 1000 },
+          { "id": 3, "color": { "Default": "#4FD5B0" }, "comparator": "<", "value": 1000 }
+        ] }],
+        "unitsOverrides": [{ "identifier": "js_exceptions", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "4": {
+      "title": "\ud83d\udc64 Affected Sessions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| summarize affected_sessions = countDistinct(dt.rum.session.id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": { "label": "SESSIONS HIT", "recordField": "affected_sessions", "colorThresholdTarget": "background" },
+        "thresholds": [{ "id": 1, "field": "affected_sessions", "title": "", "isEnabled": true, "rules": [
+          { "id": 1, "color": { "Default": "#C62239" }, "comparator": ">=", "value": 10000 },
+          { "id": 2, "color": { "Default": "#F8B000" }, "comparator": ">=", "value": 1000 },
+          { "id": 3, "color": { "Default": "#7C38BC" }, "comparator": "<", "value": 1000 }
+        ] }],
+        "unitsOverrides": [{ "identifier": "affected_sessions", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "5": {
+      "title": "\ud83d\udcca Error Split",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| summarize Errors = count(), by:{error.type}\n| sort Errors desc",
+      "visualization": "pieChart",
+      "visualizationSettings": { "chartSettings": {}, "autoSelectVisualization": false },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "6": {
+      "title": "\ud83d\udcc8 Step 1 \u2014 When Did the Spike Happen?",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| makeTimeseries errors = count(), by:{error.type}, interval:1h",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": { "legend": { "hidden": false }, "gapPolicy": "connect" },
+        "autoSelectVisualization": false
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "7": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83d\udd0d Step 2 \u2014 What Error Caused the Spike?\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "labelMode": "none", "isIconVisible": true, "prefixIcon": "WarningIcon", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "a", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": "#C62239", "comparator": "!=", "value": "0" }] }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "8": {
+      "title": "\ud83d\udea8 Top Errors by Volume",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| summarize \n    Errors = count(),\n    Sessions = countDistinct(dt.rum.session.id),\n    Pages = countDistinct(view.url.path),\n    by:{error.name, error.type, error.source}\n| sort Errors desc\n| limit 10",
+      "visualization": "table",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "table": { "enableLineWrap": true, "hiddenColumns": [], "lineWrapIds": ["error.name"], "firstVisibleRowIndex": 0, "columnWidths": {} },
+        "unitsOverrides": [
+          { "identifier": "Errors", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 },
+          { "identifier": "Sessions", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 },
+          { "identifier": "Pages", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "9": {
+      "title": "\ud83d\udcc8 Top 5 Errors Over Time (Which One Spiked?)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| makeTimeseries errors = count(), by:{error.name}, interval:1h\n| fieldsAdd total = arraySum(errors)\n| sort total desc\n| limit 5\n| fields timeframe, interval, error.name, errors",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": { "legend": { "hidden": false }, "gapPolicy": "connect" },
+        "autoSelectVisualization": false
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "10": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83d\udcc4 Step 3 \u2014 Which Pages & Scripts Are Affected?\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "labelMode": "none", "isIconVisible": true, "prefixIcon": "WebApplicationIcon", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "a", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": "#F8B000", "comparator": "!=", "value": "0" }] }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "11": {
+      "title": "\ud83d\udcc4 Error \u00d7 Page \u00d7 Domain (Root Cause Matrix)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| summarize \n    Errors = count(),\n    Sessions = countDistinct(dt.rum.session.id),\n    by:{error.name, view.url.path, url.domain}\n| sort Errors desc\n| limit 15",
+      "visualization": "table",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "table": { "enableLineWrap": true, "hiddenColumns": [], "lineWrapIds": ["error.name", "view.url.path", "url.domain"], "firstVisibleRowIndex": 0, "columnWidths": {} },
+        "unitsOverrides": [
+          { "identifier": "Errors", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 },
+          { "identifier": "Sessions", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "12": {
+      "title": "\ud83d\udcca Top Pages by Error Count",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| summarize Errors = count(), by:{view.url.path}\n| sort Errors desc\n| limit 10\n| fieldsRename `Page Path` = view.url.path",
+      "visualization": "categoricalBarChart",
+      "visualizationSettings": {
+        "chartSettings": { "colorPalette": "orange", "categoricalBarChart": { "categoryAxisLabel": "Page Path", "valueAxisLabel": "Errors" } },
+        "autoSelectVisualization": false,
+        "unitsOverrides": [{ "identifier": "Errors", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "13": {
+      "title": "\ud83d\udcdc Top Error Domains / Scripts",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| summarize Errors = count(), by:{url.domain}\n| sort Errors desc\n| limit 10\n| fieldsRename `Script Domain` = url.domain",
+      "visualization": "categoricalBarChart",
+      "visualizationSettings": {
+        "chartSettings": { "colorPalette": "purple", "categoricalBarChart": { "categoryAxisLabel": "Script / Resource Domain", "valueAxisLabel": "Errors" } },
+        "autoSelectVisualization": false,
+        "unitsOverrides": [{ "identifier": "Errors", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "14": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83d\udcc8 Step 4 \u2014 Which Errors Are Growing Fastest?\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "labelMode": "none", "isIconVisible": true, "prefixIcon": "TrendIcon", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "a", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": "#C62239", "comparator": "!=", "value": "0" }] }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "15": {
+      "title": "\ud83d\udcc8 Top Errors by % Growth (2nd Half vs 1st Half of Window)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| fieldsAdd midpoint = toTimestamp(toLong($dt_timeframe_from) + (toLong($dt_timeframe_to) - toLong($dt_timeframe_from)) / 2)\n| fieldsAdd half = if(start_time < midpoint, \"1st_half\", else:\"2nd_half\")\n| summarize \n    First_Half = countIf(half == \"1st_half\"),\n    Second_Half = countIf(half == \"2nd_half\"),\n    Total = count(),\n    by:{error.name}\n| filter First_Half > 0 and Total >= 50\n| fieldsAdd Growth_Pct = round((toDouble(Second_Half) - toDouble(First_Half)) * 1000.0 / toDouble(First_Half)) / 10.0\n| sort Growth_Pct desc\n| limit 10",
+      "visualization": "table",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "table": { "enableLineWrap": true, "hiddenColumns": [], "lineWrapIds": ["error.name"], "firstVisibleRowIndex": 0, "columnWidths": {} },
+        "unitsOverrides": [
+          { "identifier": "First_Half", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 },
+          { "identifier": "Second_Half", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 },
+          { "identifier": "Total", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "16": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83d\udd25 Step 5 \u2014 JS Exception Details (if error.type = exception)\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "labelMode": "none", "isIconVisible": true, "prefixIcon": "TechnologyIcon", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "a", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": "#7C38BC", "comparator": "!=", "value": "0" }] }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "17": {
+      "title": "\ud83d\udd25 Top JS Exceptions \u2014 Message, Type & Source",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\" and error.type == \"exception\"\n| summarize \n    Errors = count(),\n    Sessions = countDistinct(dt.rum.session.id),\n    by:{exception.message, exception.type, error.source, view.url.path}\n| sort Errors desc\n| limit 10",
+      "visualization": "table",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "table": { "enableLineWrap": true, "hiddenColumns": [], "lineWrapIds": ["exception.message", "view.url.path"], "firstVisibleRowIndex": 0, "columnWidths": {} },
+        "unitsOverrides": [
+          { "identifier": "Errors", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 },
+          { "identifier": "Sessions", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "18": {
+      "title": "\ud83d\udcc8 JS Exception Volume Over Time by Source",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\" and error.type == \"exception\"\n| makeTimeseries errors = count(), by:{error.source}, interval:1h",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": { "legend": { "hidden": false }, "gapPolicy": "connect" },
+        "autoSelectVisualization": false
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    }
+  },
+  "layouts": {
+    "0":  { "x": 0,  "y": 0,  "w": 24, "h": 3 },
+    "1":  { "x": 0,  "y": 3,  "w": 24, "h": 1 },
+    "2":  { "x": 0,  "y": 4,  "w": 6,  "h": 3 },
+    "3":  { "x": 6,  "y": 4,  "w": 6,  "h": 3 },
+    "4":  { "x": 12, "y": 4,  "w": 6,  "h": 3 },
+    "5":  { "x": 18, "y": 4,  "w": 6,  "h": 5 },
+    "6":  { "x": 0,  "y": 7,  "w": 18, "h": 7 },
+    "7":  { "x": 0,  "y": 14, "w": 24, "h": 1 },
+    "8":  { "x": 0,  "y": 15, "w": 12, "h": 8 },
+    "9":  { "x": 12, "y": 15, "w": 12, "h": 8 },
+    "10": { "x": 0,  "y": 23, "w": 24, "h": 1 },
+    "11": { "x": 0,  "y": 24, "w": 24, "h": 9 },
+    "12": { "x": 0,  "y": 33, "w": 12, "h": 7 },
+    "13": { "x": 12, "y": 33, "w": 12, "h": 7 },
+    "14": { "x": 0,  "y": 40, "w": 24, "h": 1 },
+    "15": { "x": 0,  "y": 41, "w": 24, "h": 8 },
+    "16": { "x": 0,  "y": 49, "w": 24, "h": 1 },
+    "17": { "x": 0,  "y": 50, "w": 12, "h": 8 },
+    "18": { "x": 12, "y": 50, "w": 12, "h": 8 }
+  }
+}

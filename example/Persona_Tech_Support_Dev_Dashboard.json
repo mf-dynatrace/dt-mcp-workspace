@@ -1,0 +1,900 @@
+{
+  "version": 20,
+  "variables": [],
+  "tiles": {
+    "0": {
+      "type": "markdown",
+      "content": "# 🛠️ Tech Support & Dev — Application Health & Performance Dashboard\n\n**Application:** [APP_NAME] (`APPLICATION-XXXXXXXXXXXX`) | **Data Source:** Gen 3 RUM (`user.events`), Metrics\n\n**[CLIENT_NAME] — Company — Company Objectives Tracked:**\n\n| Objective | KPIs on this Dashboard |\n|-----------|------------------------|\n| **Ensure Platform Reliability** | Total errors, error rate trend, first-party vs third-party split |\n| **Deliver Fast Digital Experience** | Core Web Vitals (LCP, FCP, INP, CLS, TTFB) with Google thresholds |\n| **Reduce Customer-Impacting Bugs** | Top JS exceptions, top first-party errors, sessions affected |\n| **Maintain Booking Flow Integrity** | Booking SPA errors, API error rates, 500/404 breakdowns |\n| **Optimise Third-Party Dependencies** | Third-party error volume, worst ad-tech / analytics failures |\n\n> **Usage:** Use this dashboard to triage errors, monitor Core Web Vitals against Google SLO thresholds, and prioritise bug fixes by session impact. Timeframe defaults to 24h for cost efficiency."
+    },
+    "1": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Error Overview\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "WarningTriangleIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#C62239",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "2": {
+      "title": "🔴 Total Errors",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| summarize total_errors = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "TOTAL ERRORS",
+          "recordField": "total_errors",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "total_errors",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#4FD5B0"},
+                "comparator": "<=",
+                "value": 10000
+              },
+              {
+                "id": 2,
+                "color": {"Default": "#F8B000"},
+                "comparator": "<=",
+                "value": 50000
+              },
+              {
+                "id": 3,
+                "color": {"Default": "#C62239"},
+                "comparator": ">",
+                "value": 50000
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "total_errors",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "3": {
+      "title": "🏠 First-Party Errors",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\" and url.provider == \"first_party\"\n| summarize first_party_errors = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "1ST PARTY ERRORS",
+          "recordField": "first_party_errors",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "first_party_errors",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#4FD5B0"},
+                "comparator": "<=",
+                "value": 1000
+              },
+              {
+                "id": 2,
+                "color": {"Default": "#F8B000"},
+                "comparator": "<=",
+                "value": 5000
+              },
+              {
+                "id": 3,
+                "color": {"Default": "#C62239"},
+                "comparator": ">",
+                "value": 5000
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "first_party_errors",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "4": {
+      "title": "🌐 Third-Party Errors",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\" and url.provider == \"third_party\"\n| summarize third_party_errors = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "3RD PARTY ERRORS",
+          "recordField": "third_party_errors",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "third_party_errors",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#4FD5B0"},
+                "comparator": "<=",
+                "value": 30000
+              },
+              {
+                "id": 2,
+                "color": {"Default": "#F8B000"},
+                "comparator": "<=",
+                "value": 80000
+              },
+              {
+                "id": 3,
+                "color": {"Default": "#C62239"},
+                "comparator": ">",
+                "value": 80000
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "third_party_errors",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "5": {
+      "title": "💥 JS Exceptions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\" and error.type == \"exception\"\n| summarize js_exceptions = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "JS EXCEPTIONS",
+          "recordField": "js_exceptions",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "js_exceptions",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#4FD5B0"},
+                "comparator": "<=",
+                "value": 5000
+              },
+              {
+                "id": 2,
+                "color": {"Default": "#F8B000"},
+                "comparator": "<=",
+                "value": 15000
+              },
+              {
+                "id": 3,
+                "color": {"Default": "#C62239"},
+                "comparator": ">",
+                "value": 15000
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "js_exceptions",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "6": {
+      "title": "📈 Error Trend (Hourly)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| makeTimeseries first_party = countIf(url.provider == \"first_party\"), third_party = countIf(url.provider == \"third_party\"), exceptions = countIf(error.type == \"exception\"), interval:1h",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["first_party", "third_party", "exceptions"],
+            "timestamp": "timeframe"
+          },
+          "seriesOverrides": [
+            { "seriesId": ["first_party"], "override": { "color": "#C62239" } },
+            { "seriesId": ["third_party"], "override": { "color": "#F8B000" } },
+            { "seriesId": ["exceptions"], "override": { "color": "#7C38BC" } }
+          ],
+          "legend": { "position": "bottom" },
+          "leftYAxisSettings": { "label": "Errors" }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "7": {
+      "title": "📊 Error Type & Provider Breakdown",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| summarize error_count = count(), sessions_affected = countDistinct(dt.rum.session.id), by:{error.type, url.provider}\n| sort error_count desc",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "error_count",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": "<=", "value": 1000 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": "<=", "value": 10000 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": ">", "value": 10000 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "8": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Core Web Vitals (Google SLO Thresholds)\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "PerformanceIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#134FC9",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "9": {
+      "title": "⚡ Core Web Vitals — Top Pages (P75)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"view_summary\"\n| filter isNotNull(web_vitals.largest_contentful_paint)\n| summarize Samples = count(), P75_LCP_ms = percentile(web_vitals.largest_contentful_paint, 75) / 1000000, P75_FCP_ms = percentile(web_vitals.first_contentful_paint, 75) / 1000000, P75_INP_ms = percentile(web_vitals.interaction_to_next_paint, 75) / 1000000, P75_TTFB_ms = percentile(web_vitals.time_to_first_byte, 75) / 1000000, P75_CLS = percentile(web_vitals.cumulative_layout_shift, 75), by:{view.detected_name}\n| filter Samples >= 30\n| sort P75_LCP_ms desc\n| limit 15",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "P75_LCP_ms",
+            "title": "LCP",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": "<=", "value": 2500 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": "<=", "value": 4000 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": ">", "value": 4000 }
+            ]
+          },
+          {
+            "id": 2,
+            "field": "P75_INP_ms",
+            "title": "INP",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": "<=", "value": 200 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": "<=", "value": 500 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": ">", "value": 500 }
+            ]
+          },
+          {
+            "id": 3,
+            "field": "P75_CLS",
+            "title": "CLS",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": "<=", "value": 0.1 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": "<=", "value": 0.25 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": ">", "value": 0.25 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "10": {
+      "title": "📈 LCP Trend Over Time (P75 ms)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"view_summary\"\n| filter isNotNull(web_vitals.largest_contentful_paint)\n| makeTimeseries p75_lcp = percentile(web_vitals.largest_contentful_paint, 75), interval:1h\n| fieldsAdd p75_lcp_ms = p75_lcp[] / 1000000",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["p75_lcp_ms"],
+            "timestamp": "timeframe"
+          },
+          "seriesOverrides": [
+            { "seriesId": ["p75_lcp_ms"], "override": { "color": "#134FC9" } }
+          ],
+          "legend": { "position": "hidden" },
+          "leftYAxisSettings": { "label": "LCP P75 (ms)" }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "11": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Top Errors — Prioritised by Session Impact\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "BugIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#FF6900",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "12": {
+      "title": "🔴 Top First-Party Errors (Actionable)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\" and url.provider == \"first_party\"\n| summarize error_count = count(), sessions_affected = countDistinct(dt.rum.session.id), by:{error.name, error.type, url.domain, view.detected_name}\n| sort sessions_affected desc\n| limit 15",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "sessions_affected",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": "<=", "value": 50 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": "<=", "value": 500 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": ">", "value": 500 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "13": {
+      "title": "💥 Top JS Exceptions (Code Bugs)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\" and error.type == \"exception\"\n| summarize error_count = count(), sessions_affected = countDistinct(dt.rum.session.id), by:{error.name, error.source, view.detected_name}\n| sort sessions_affected desc\n| limit 15",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "sessions_affected",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": "<=", "value": 50 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": "<=", "value": 300 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": ">", "value": 300 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "14": {
+      "title": "🌐 Top Third-Party Errors (Dependencies)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\" and url.provider == \"third_party\"\n| summarize error_count = count(), sessions_affected = countDistinct(dt.rum.session.id), by:{error.name, url.domain}\n| sort error_count desc\n| limit 15",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "error_count",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": "<=", "value": 1000 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": "<=", "value": 10000 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": ">", "value": 10000 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "15": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Booking Flow Health\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "WebApplicationIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#7C38BC",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "16": {
+      "title": "❌ Booking SPA Errors (by Type & Source)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| filter matchesValue(toString(view.url.path), \"*/bookings*\")\n| summarize error_count = count(), sessions_affected = countDistinct(dt.rum.session.id), by:{error.name, error.type, error.source, url.provider}\n| sort sessions_affected desc\n| limit 20",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "sessions_affected",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": "<=", "value": 30 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": "<=", "value": 200 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": ">", "value": 200 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "17": {
+      "title": "📊 Booking API Error Rates (SPA Steps)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| filter matchesValue(toString(view.url.path), \"*/bookings/\") and view.url.path != \"/your/bookings/manage-my-bookings/\" and view.url.path != \"/your/bookings/thank-you-for-your-booking/\"\n| filter url.path == \"/api/packages/definitions\" or url.path == \"/api/seasons/getAll\" or url.path == \"/api/hotel/list\" or url.path == \"/api/hotel/details\" or url.path == \"/api/masterdata/getAttractionsAvailabilityInfo\" or url.path == \"/api/cms/package/verifyAnnualPassAccess\" or url.path == \"/api/booking/reinit\"\n| summarize total = count(), errors = countIf(toDouble(http.response.status_code) >= 400), avg_ms = avg(duration) / 1000000, p95_ms = percentile(duration, 95) / 1000000, by:{url.path}\n| fieldsAdd error_rate_pct = round(toDouble(errors) / toDouble(total) * 100, decimals: 2)\n| sort errors desc",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "error_rate_pct",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": "<=", "value": 1 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": "<=", "value": 5 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": ">", "value": 5 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "18": {
+      "title": "📊 Top Error Pages (by Sessions Affected)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| summarize error_count = count(), sessions = countDistinct(dt.rum.session.id), first_party = countIf(url.provider == \"first_party\"), third_party = countIf(url.provider == \"third_party\"), exceptions = countIf(error.type == \"exception\"), by:{view.detected_name}\n| sort sessions desc\n| limit 15",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "first_party",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": "<=", "value": 100 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": "<=", "value": 500 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": ">", "value": 500 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "19": {
+      "title": "📈 INP Trend Over Time (P75 ms)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"view_summary\"\n| filter isNotNull(web_vitals.interaction_to_next_paint)\n| makeTimeseries p75_inp = percentile(web_vitals.interaction_to_next_paint, 75), interval:1h\n| fieldsAdd p75_inp_ms = p75_inp[] / 1000000",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["p75_inp_ms"],
+            "timestamp": "timeframe"
+          },
+          "seriesOverrides": [
+            { "seriesId": ["p75_inp_ms"], "override": { "color": "#FF6900" } }
+          ],
+          "legend": { "position": "hidden" },
+          "leftYAxisSettings": { "label": "INP P75 (ms)" }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    }
+  },
+  "layouts": {
+    "0":  {"x": 0,  "y": 0,  "w": 24, "h": 6},
+    "1":  {"x": 0,  "y": 6,  "w": 24, "h": 1},
+    "2":  {"x": 0,  "y": 7,  "w": 6,  "h": 3},
+    "3":  {"x": 6,  "y": 7,  "w": 6,  "h": 3},
+    "4":  {"x": 12, "y": 7,  "w": 6,  "h": 3},
+    "5":  {"x": 18, "y": 7,  "w": 6,  "h": 3},
+    "6":  {"x": 0,  "y": 10, "w": 12, "h": 6},
+    "7":  {"x": 12, "y": 10, "w": 12, "h": 6},
+    "8":  {"x": 0,  "y": 16, "w": 24, "h": 1},
+    "9":  {"x": 0,  "y": 17, "w": 24, "h": 7},
+    "10": {"x": 0,  "y": 24, "w": 12, "h": 6},
+    "19": {"x": 12, "y": 24, "w": 12, "h": 6},
+    "11": {"x": 0,  "y": 30, "w": 24, "h": 1},
+    "12": {"x": 0,  "y": 31, "w": 12, "h": 7},
+    "13": {"x": 12, "y": 31, "w": 12, "h": 7},
+    "14": {"x": 0,  "y": 38, "w": 12, "h": 7},
+    "18": {"x": 12, "y": 38, "w": 12, "h": 7},
+    "15": {"x": 0,  "y": 45, "w": 24, "h": 1},
+    "16": {"x": 0,  "y": 46, "w": 12, "h": 7},
+    "17": {"x": 12, "y": 46, "w": 12, "h": 7}
+  },
+  "importedWithCode": false,
+  "settings": {
+    "defaultTimeframe": {
+      "value": {
+        "from": "now()-24h",
+        "to": "now()"
+      },
+      "enabled": true
+    }
+  }
+}

@@ -1,0 +1,868 @@
+{
+  "version": 20,
+  "variables": [],
+  "tiles": {
+    "0": {
+      "type": "markdown",
+      "content": "# 🔴 [CLIENT_NAME] [LOCATION] — Top 5 Worst Performing Pages\n\n**Application:** [APP_NAME] (`APPLICATION-XXXXXXXXXXXX`) | **Analysis Period:** Last 24 hours\n\nThis dashboard identifies the **5 pages with the worst combination of slow load times, high error volumes, and user impact**.\nEach page is analysed by:\n- **Page load performance** (avg, p90, p95)\n- **Error volume & type** (first-party, third-party, JS exceptions)\n- **Actionable root causes** (first-party errors the team can fix)\n\n> ⚠️ **Key Finding:** The **/your/bookings/** page has the highest first-party error rate (26%) — directly impacting revenue conversion."
+    },
+    "1": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Page Performance\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "SpeedIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#C62239",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "2": {
+      "title": "🔴 Total Errors (Top 5 Pages)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| filter in(view.detected_name, {\"/your/bookings/\", \"/your-location/products/store/\", \"/your-location/products/products/\", \"/your-location/\", \"/your-location/info/hours/\"})\n| summarize total_errors = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "ERRORS (24h)",
+          "recordField": "total_errors",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": {
+            "isVisible": false
+          },
+          "trend": {
+            "isVisible": false
+          }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "total_errors",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": "≥",
+                "value": 10000
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≥",
+                "value": 1000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "<",
+                "value": 1000
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "3": {
+      "title": "👤 Sessions Affected",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| filter in(view.detected_name, {\"/your/bookings/\", \"/your-location/products/store/\", \"/your-location/products/products/\", \"/your-location/\", \"/your-location/info/hours/\"})\n| summarize affected_sessions = countDistinct(dt.rum.session.id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "SESSIONS WITH ERRORS",
+          "recordField": "affected_sessions",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": {
+            "isVisible": false
+          },
+          "trend": {
+            "isVisible": false
+          }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "affected_sessions",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": "≥",
+                "value": 5000
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≥",
+                "value": 1000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "<",
+                "value": 1000
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "4": {
+      "title": "⏱️ Worst P90 Load Time",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"view_summary\"\n| filter in(view.detected_name, {\"/your/bookings/\", \"/your-location/products/store/\", \"/your-location/products/products/\", \"/your-location/\", \"/your-location/info/hours/\"})\n| summarize worst_p90_ms = max(duration) / 1000000\n| fieldsAdd worst_p90_s = worst_p90_ms / 1000",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "WORST P90 (seconds)",
+          "recordField": "worst_p90_s",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": {
+            "isVisible": false
+          },
+          "trend": {
+            "isVisible": false
+          }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "worst_p90_s",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": "≥",
+                "value": 3
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≥",
+                "value": 1
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "<",
+                "value": 1
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "worst_p90_s",
+            "unitCategory": "time",
+            "baseUnit": "second",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "s",
+            "delimiter": true,
+            "added": 1766081789473
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "5": {
+      "title": "🏷️ First-Party Error Rate",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| filter in(view.detected_name, {\"/your/bookings/\", \"/your-location/products/store/\", \"/your-location/products/products/\", \"/your-location/\", \"/your-location/info/hours/\"})\n| summarize first_party = countIf(url.provider == \"first_party\"), total = count()\n| fieldsAdd fp_rate = (toDouble(first_party) / toDouble(total)) * 100",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "FIRST-PARTY ERROR %",
+          "recordField": "fp_rate",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": {
+            "isVisible": false
+          },
+          "trend": {
+            "isVisible": false
+          }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "fp_rate",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": "≥",
+                "value": 10
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": "≥",
+                "value": 5
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "<",
+                "value": 5
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "fp_rate",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "%",
+            "delimiter": true,
+            "added": 1766081789473
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "6": {
+      "title": "📊 Errors by Page (Top 5 Worst)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| filter in(view.detected_name, {\"/your/bookings/\", \"/your-location/products/store/\", \"/your-location/products/products/\", \"/your-location/\", \"/your-location/info/hours/\"})\n| summarize \n    error_count = count(),\n    affected_sessions = countDistinct(dt.rum.session.id),\n    by:{view.detected_name}\n| sort error_count desc",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "categoryAxisValues": ["view.detected_name"],
+            "leftAxisValues": ["error_count"]
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["error_count"],
+              "override": {
+                "color": "#C62239"
+              }
+            }
+          ],
+          "legend": {
+            "position": "bottom"
+          },
+          "categoricalBarChartSettings": {
+            "layout": "horizontal"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "7": {
+      "title": "⏱️ Page Load Performance Comparison (P90 ms)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"view_summary\"\n| filter in(view.detected_name, {\"/your/bookings/\", \"/your-location/products/store/\", \"/your-location/products/products/\", \"/your-location/\", \"/your-location/info/hours/\"})\n| summarize \n    page_views = count(),\n    avg_ms = avg(duration) / 1000000,\n    p90_ms = percentile(duration, 90) / 1000000,\n    p95_ms = percentile(duration, 95) / 1000000,\n    by:{view.detected_name}\n| sort p90_ms desc",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "categoryAxisValues": ["view.detected_name"],
+            "leftAxisValues": ["p90_ms", "avg_ms"]
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["p90_ms"],
+              "override": {
+                "color": "#FF6900"
+              }
+            },
+            {
+              "seriesId": ["avg_ms"],
+              "override": {
+                "color": "#2AB6F4"
+              }
+            }
+          ],
+          "legend": {
+            "position": "bottom"
+          },
+          "categoricalBarChartSettings": {
+            "layout": "horizontal"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "8": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Error Breakdown by Type\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "BugReportIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#FF6900",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "9": {
+      "title": "🔵 Error Type Split (1st Party vs 3rd Party vs JS)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| filter in(view.detected_name, {\"/your/bookings/\", \"/your-location/products/store/\", \"/your-location/products/products/\", \"/your-location/\", \"/your-location/info/hours/\"})\n| summarize \n    first_party = countIf(url.provider == \"first_party\"),\n    third_party = countIf(url.provider == \"third_party\"),\n    js_exceptions = countIf(error.type == \"exception\"),\n    by:{view.detected_name}\n| sort first_party desc",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "categoryAxisValues": ["view.detected_name"],
+            "leftAxisValues": ["first_party", "third_party", "js_exceptions"]
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["first_party"],
+              "override": {
+                "color": "#C62239"
+              }
+            },
+            {
+              "seriesId": ["third_party"],
+              "override": {
+                "color": "#F8B000"
+              }
+            },
+            {
+              "seriesId": ["js_exceptions"],
+              "override": {
+                "color": "#7C38BC"
+              }
+            }
+          ],
+          "legend": {
+            "position": "bottom"
+          },
+          "categoricalBarChartSettings": {
+            "layout": "vertical",
+            "categoryAxisTickLayout": "horizontal"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "10": {
+      "title": "📈 Error Trend Over Time (by Page)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| filter in(view.detected_name, {\"/your/bookings/\", \"/your-location/products/store/\", \"/your-location/products/products/\", \"/your-location/\", \"/your-location/info/hours/\"})\n| makeTimeseries errors = count(), by:{view.detected_name}, bins:24",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["errors"],
+            "timestamp": "timeframe"
+          },
+          "legend": {
+            "position": "bottom"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "11": {
+      "title": "🍩 Error Source Distribution (All 5 Pages)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| filter in(view.detected_name, {\"/your/bookings/\", \"/your-location/products/store/\", \"/your-location/products/products/\", \"/your-location/\", \"/your-location/info/hours/\"})\n| fieldsAdd error_category = if(\n    url.provider == \"first_party\", \"First-Party (Actionable)\",\n    else:if(url.provider == \"third_party\", \"Third-Party (Ads/Tracking)\",\n    else:if(error.type == \"exception\", \"JS Exception (Code Bug)\",\n    else:\"Other\")))\n| summarize count = count(), by:{error_category}\n| sort count desc",
+      "visualization": "donutChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "circleChartSettings": {
+            "valueType": "relative",
+            "showTotalValue": true
+          },
+          "legend": {
+            "position": "bottom"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "12": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"🔴 Bookings Page Deep Dive\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "CartIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#C62239",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "13": {
+      "title": "🚨 Bookings — Actionable Errors (First-Party + JS Exceptions)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| filter view.detected_name == \"/your/bookings/\" and (url.provider == \"first_party\" or error.type == \"exception\")\n| summarize \n    error_count = count(),\n    affected_sessions = countDistinct(dt.rum.session.id),\n    by:{error.name, error.type, error.source, url.provider}\n| sort error_count desc\n| limit 15",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "14": {
+      "title": "📈 Bookings Page — Error Trend (Hourly)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| filter view.detected_name == \"/your/bookings/\"\n| fieldsAdd error_category = if(\n    url.provider == \"first_party\", \"First-Party\",\n    else:if(error.type == \"exception\", \"JS Exception\",\n    else:\"Third-Party\"))\n| makeTimeseries errors = count(), by:{error_category}, bins:24",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["errors"],
+            "timestamp": "timeframe"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["First-Party"],
+              "override": {
+                "color": "#C62239"
+              }
+            },
+            {
+              "seriesId": ["JS Exception"],
+              "override": {
+                "color": "#7C38BC"
+              }
+            },
+            {
+              "seriesId": ["Third-Party"],
+              "override": {
+                "color": "#F8B000"
+              }
+            }
+          ],
+          "legend": {
+            "position": "bottom"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "15": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"All Pages — Top Errors\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "ListIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#2AB6F4",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "16": {
+      "title": "📋 Top Errors Across All 5 Worst Pages",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| filter in(view.detected_name, {\"/your/bookings/\", \"/your-location/products/store/\", \"/your-location/products/products/\", \"/your-location/\", \"/your-location/info/hours/\"})\n| summarize \n    error_count = count(),\n    affected_sessions = countDistinct(dt.rum.session.id),\n    by:{view.detected_name, error.name, error.type, url.provider}\n| sort error_count desc\n| limit 25",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "17": {
+      "title": "🏷️ Third-Party Error Domains (Noise Sources)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\" and url.provider == \"third_party\"\n| filter in(view.detected_name, {\"/your/bookings/\", \"/your-location/products/store/\", \"/your-location/products/products/\", \"/your-location/\", \"/your-location/info/hours/\"})\n| summarize \n    errors = count(),\n    sessions = countDistinct(dt.rum.session.id),\n    by:{url.domain}\n| sort errors desc\n| limit 10",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "categoryAxisValues": ["url.domain"],
+            "leftAxisValues": ["errors"]
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["errors"],
+              "override": {
+                "color": "#F8B000"
+              }
+            }
+          ],
+          "legend": {
+            "position": "bottom"
+          },
+          "categoricalBarChartSettings": {
+            "layout": "horizontal"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "18": {
+      "type": "markdown",
+      "content": "## 🎯 Root Cause Summary & Recommendations\n\n### Page #1: `/your/bookings/` — **CRITICAL (Revenue Impact)**\n| Metric | Value |\n|--------|-------|\n| P90 Load Time | **1,367 ms** |\n| Avg Load Time | **735 ms** |\n| Total Errors (24h) | **6,450** |\n| First-Party Errors | **1,696 (26%)** — Highest of all pages |\n| JS Exceptions | **1,609** |\n| Sessions Affected | **1,684** |\n\n**Root Causes:**\n- 🔴 **404: loader.svg** (850 errors, 748 sessions) — Missing asset file. Fix: upload the SVG or update the reference path\n- 🔴 **500: verifyMembershipAccess API** (259 errors, 79 sessions) — Backend API failure on membership verification\n- 🔴 **null is not an object ('t.current.style')** (409 errors) — React ref accessed before mount. Fix: null-check in component\n- 🟠 **500: /api/hotel/list** (69 errors) — Hotel listing API returning server errors\n- 🟠 **401: /api/booking/reinit** (60 errors) — Session auth expiry during checkout\n- 🟠 **[CheckoutPage] console errors** (94 errors) — Checkout component throwing console errors\n- 🟠 **Serialiser failed** (78 errors) — Data serialisation bug in booking flow\n\n---\n\n### Page #2: `/your-location/products/store/` — **HIGH IMPACT (Highest Traffic)**\n| Metric | Value |\n|--------|-------|\n| Page Views | **10,390** |\n| Total Errors (24h) | **14,188** |\n| First-Party Errors | **357 (2.5%)** |\n| JS Exceptions | **2,140** |\n| Sessions Affected | **4,446** |\n\n**Root Causes:**\n- 🟡 82% third-party ad/tracking errors (Amazon, Taboola, Google)\n- 🟠 **unhandled rejection without reason** (2,070 errors from 119 sessions) — Promise rejection in ticket widget\n- 🟡 First-party error rate is low — most noise is from ad networks\n\n---\n\n### Page #3: `/your-location/products/products/` — **JS CRASH**\n| Metric | Value |\n|--------|-------|\n| P90 Load Time | **263 ms** |\n| Total Errors (24h) | **11,806** |\n| JS Exceptions | **1,405** |\n| Sessions Affected | **2,951** |\n\n**Root Causes:**\n- 🔴 **products/:4185:31** (815 errors, 751 sessions) — JS exception at line 4185, crashing for 30% of visitors\n- 🔴 **products/:4185:20** (157 errors, 139 sessions) — Related crash on same line\n- 🟡 87% of errors are third-party ad network failures\n\n---\n\n### Page #4: `/your-location/` (Homepage) — **HIGH VOLUME**\n| Metric | Value |\n|--------|-------|\n| Page Views | **8,313** |\n| Avg Load Time | **94 ms** |\n| Total Errors (24h) | **11,772** |\n| First-Party Errors | **395 (3.4%)** |\n| Sessions Affected | **4,288** |\n\n**Root Causes:**\n- 🟡 95% third-party errors (Amazon, Taboola, Google, App Insights)\n- 🟢 Page load performance is good (94ms avg)\n- 🟡 Error noise from ad/tracking scripts inflating numbers\n\n---\n\n### Page #5: `/your-location/info/hours/` — **SLOW**\n| Metric | Value |\n|--------|-------|\n| P90 Load Time | **575 ms** |\n| Avg Load Time | **447 ms** |\n| Total Errors (24h) | **2,334** |\n| Sessions Affected | **917** |\n\n**Root Causes:**\n- 🟠 Page load is 5x slower than homepage — likely heavy calendar/widget component\n- 🟡 83% third-party errors\n- 🟠 JS exceptions (398) may indicate calendar widget issues"
+    }
+  },
+  "layouts": {
+    "0": {"x": 0, "y": 0, "w": 24, "h": 4},
+    "1": {"x": 0, "y": 4, "w": 24, "h": 1},
+    "2": {"x": 0, "y": 5, "w": 6, "h": 3},
+    "3": {"x": 6, "y": 5, "w": 6, "h": 3},
+    "4": {"x": 12, "y": 5, "w": 6, "h": 3},
+    "5": {"x": 18, "y": 5, "w": 6, "h": 3},
+    "6": {"x": 0, "y": 8, "w": 12, "h": 6},
+    "7": {"x": 12, "y": 8, "w": 12, "h": 6},
+    "8": {"x": 0, "y": 14, "w": 24, "h": 1},
+    "9": {"x": 0, "y": 15, "w": 12, "h": 6},
+    "10": {"x": 12, "y": 15, "w": 12, "h": 6},
+    "11": {"x": 0, "y": 21, "w": 12, "h": 6},
+    "12": {"x": 0, "y": 27, "w": 24, "h": 1},
+    "13": {"x": 0, "y": 28, "w": 12, "h": 7},
+    "14": {"x": 12, "y": 28, "w": 12, "h": 7},
+    "15": {"x": 0, "y": 35, "w": 24, "h": 1},
+    "16": {"x": 0, "y": 36, "w": 24, "h": 7},
+    "17": {"x": 12, "y": 21, "w": 12, "h": 6},
+    "18": {"x": 0, "y": 43, "w": 24, "h": 22}
+  },
+  "importedWithCode": false,
+  "settings": {
+    "defaultTimeframe": {
+      "value": {
+        "from": "now()-24h",
+        "to": "now()"
+      },
+      "enabled": true
+    }
+  }
+}

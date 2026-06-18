@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "dynatrace-mcp-server": {
+      "command": "bash",
+      "args": ["-c", "set -a && source .env && set +a && exec npx -y @dynatrace-oss/dynatrace-mcp-server@latest"]
+    }
+  }
+}

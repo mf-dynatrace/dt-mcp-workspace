@@ -1,0 +1,164 @@
+name: Sync Upstream Skills
+
+on:
+  schedule:
+    # Weekly on Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force re-sync all skills (ignore hash comparison)'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  sync-skills:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout dynatrace-for-ai
+        uses: actions/checkout@v4
+        with:
+          repository: dynatrace/dynatrace-for-ai
+          path: _upstream
+          sparse-checkout: |
+            skills
+          sparse-checkout-cone-mode: false
+
+      - name: Sync upstream skills
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          LOCK_FILE="skills-lock.json"
+          UPSTREAM_DIR="_upstream/skills"
+          LOCAL_DIR="skills"
+          FORCE="${{ inputs.force || 'false' }}"
+          UPDATED=0
+          ADDED=0
+          REMOVED=0
+
+          # Build list of upstream skill files
+          declare -A upstream_skills
+          if [ -d "$UPSTREAM_DIR" ]; then
+            for f in "$UPSTREAM_DIR"/*.md; do
+              [ -f "$f" ] || continue
+              name="$(basename "$f" .md)"
+              upstream_skills["$name"]="$f"
+            done
+          fi
+
+          echo "Found ${#upstream_skills[@]} upstream skill(s)"
+
+          # Read existing lock file to identify custom vs upstream skills
+          custom_skills=()
+          if command -v jq &>/dev/null; then
+            while IFS= read -r skill_name; do
+              source_val=$(jq -r ".skills[\"$skill_name\"].source" "$LOCK_FILE")
+              if [ "$source_val" != "dynatrace/dynatrace-for-ai" ]; then
+                custom_skills+=("$skill_name")
+              fi
+            done < <(jq -r '.skills | keys[]' "$LOCK_FILE")
+          fi
+
+          echo "Found ${#custom_skills[@]} custom skill(s) (will not be touched)"
+
+          # Process each upstream skill
+          for name in "${!upstream_skills[@]}"; do
+            upstream_file="${upstream_skills[$name]}"
+            local_file="$LOCAL_DIR/${name}.md"
+            new_hash=$(sha256sum "$upstream_file" | awk '{print $1}')
+
+            # Get existing hash from lock file
+            existing_hash=""
+            if command -v jq &>/dev/null; then
+              existing_hash=$(jq -r ".skills[\"$name\"].computedHash // \"\"" "$LOCK_FILE")
+            fi
+
+            if [ "$FORCE" = "true" ] || [ "$new_hash" != "$existing_hash" ]; then
+              cp "$upstream_file" "$local_file"
+              echo "✅ Updated: ${name}.md"
+
+              # Update lock file hash
+              if command -v jq &>/dev/null; then
+                tmp=$(mktemp)
+                jq ".skills[\"$name\"].computedHash = \"$new_hash\"" "$LOCK_FILE" > "$tmp"
+                mv "$tmp" "$LOCK_FILE"
+              fi
+
+              if [ -z "$existing_hash" ]; then
+                ADDED=$((ADDED + 1))
+                # Add new entry to lock file
+                if command -v jq &>/dev/null; then
+                  tmp=$(mktemp)
+                  jq ".skills[\"$name\"] = {\"source\": \"dynatrace/dynatrace-for-ai\", \"sourceType\": \"github\", \"computedHash\": \"$new_hash\"}" "$LOCK_FILE" > "$tmp"
+                  mv "$tmp" "$LOCK_FILE"
+                fi
+              else
+                UPDATED=$((UPDATED + 1))
+              fi
+            else
+              echo "⏭️  Unchanged: ${name}.md"
+            fi
+          done
+
+          # Check for removed upstream skills (only upstream-sourced ones)
+          if command -v jq &>/dev/null; then
+            while IFS= read -r skill_name; do
+              source_val=$(jq -r ".skills[\"$skill_name\"].source" "$LOCK_FILE")
+              if [ "$source_val" = "dynatrace/dynatrace-for-ai" ] && [ -z "${upstream_skills[$skill_name]+x}" ]; then
+                echo "🗑️  Upstream skill removed: ${skill_name}.md"
+                rm -f "$LOCAL_DIR/${skill_name}.md"
+                tmp=$(mktemp)
+                jq "del(.skills[\"$skill_name\"])" "$LOCK_FILE" > "$tmp"
+                mv "$tmp" "$LOCK_FILE"
+                REMOVED=$((REMOVED + 1))
+              fi
+            done < <(jq -r '.skills | keys[]' "$LOCK_FILE")
+          fi
+
+          # Update lastSyncedAt
+          if command -v jq &>/dev/null; then
+            tmp=$(mktemp)
+            jq ".metadata.lastSyncedAt = \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"" "$LOCK_FILE" > "$tmp"
+            mv "$tmp" "$LOCK_FILE"
+          fi
+
+          echo ""
+          echo "Summary: $UPDATED updated, $ADDED added, $REMOVED removed"
+          echo "updated=$UPDATED" >> "$GITHUB_OUTPUT"
+          echo "added=$ADDED" >> "$GITHUB_OUTPUT"
+          echo "removed=$REMOVED" >> "$GITHUB_OUTPUT"
+          TOTAL=$((UPDATED + ADDED + REMOVED))
+          echo "total_changes=$TOTAL" >> "$GITHUB_OUTPUT"
+        id: sync
+
+      - name: Cleanup upstream checkout
+        run: rm -rf _upstream
+
+      - name: Commit and push
+        if: steps.sync.outputs.total_changes != '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add skills/ skills-lock.json
+          git commit -m "chore: sync upstream skills (${{ steps.sync.outputs.updated }} updated, ${{ steps.sync.outputs.added }} added, ${{ steps.sync.outputs.removed }} removed)"
+          git push
+
+      - name: Summary
+        run: |
+          echo "### 🔄 Skill Sync Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Metric | Count |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Updated | ${{ steps.sync.outputs.updated }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Added | ${{ steps.sync.outputs.added }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Removed | ${{ steps.sync.outputs.removed }} |" >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,27 @@
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+
+# Keep the example file
+!.env.example
+
+# Reference files (tenant-specific, auto-populated by AI sessions)
+# Templates are tracked; actual reference files are local-only
+reference/*.md
+!reference/*.template.md
+
+# Generated reports (tenant-specific)
+report/
+
+# Node modules (if any local development)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+*.swp
+*.swo
+*~

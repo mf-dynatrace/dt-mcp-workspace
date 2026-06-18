@@ -1,0 +1,654 @@
+{
+  "version": 20,
+  "variables": [],
+  "tiles": {
+    "0": {
+      "type": "markdown",
+      "content": "# 📊 [CLIENT_NAME] [LOCATION] — C-Suite Business Dashboard\n\n**Application:** [APP_NAME] (`APPLICATION-XXXXXXXXXXXX`) | **Data Sources:** RUM Sessions, BizEvents (ISO Hotel Bookings), Core Web Vitals\n\n---\n\n### 🏥 Business Health Summary\n\nThe four KPI tiles below provide **at-a-glance operational health**. Thresholds are colour-coded: 🟢 Green = Healthy | 🟡 Yellow = Attention | 🔴 Red = Action Required\n\n| Indicator | Measures | 🟢 Healthy | 🟡 Attention | 🔴 Action |\n|-----------|----------|------------|-------------|----------|\n| **Total Sessions** | Website traffic volume | ≥ 200K | ≥ 100K | < 100K |\n| **Error Rate** | % sessions with errors | < 40% | < 60% | ≥ 60% |\n| **Checkout → Booking** | ISO checkout conversion | ≥ 60% | ≥ 30% | < 30% |\n| **Bookings P95 Load** | 95th pctl page load time | < 5,000 ms | < 10,000 ms | ≥ 10,000 ms |\n\n> **Revenue Scope:** ISO Hotel Bookings only. Ticket sales ([TICKET_PROVIDER]) require GTM tag deployment — see Section 1 enhancement notes."
+    },
+    "1": {
+      "title": "Total Sessions",
+      "type": "data",
+      "query": "fetch user.sessions, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter frontend.name == \"[APP_NAME]\"\n| summarize sessions = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "SESSIONS", "recordField": "sessions", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "sessions", "title": "", "isEnabled": true, "rules": [
+          { "id": 1, "color": "#C41A1A", "comparator": "<", "value": 100000 },
+          { "id": 2, "color": "#F5D30F", "comparator": "<", "value": 200000 },
+          { "id": 3, "color": "#1A8D37", "comparator": ">=", "value": 200000 }
+        ] }],
+        "unitsOverrides": [{ "identifier": "sessions", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "2": {
+      "title": "Session Error Rate",
+      "type": "data",
+      "query": "fetch user.sessions, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter frontend.name == \"[APP_NAME]\"\n| summarize total = count(), with_errors = countIf(error.count > 0)\n| fieldsAdd error_pct = 100.0 * toDouble(with_errors) / toDouble(total)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "ERROR RATE", "recordField": "error_pct", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "error_pct", "title": "", "isEnabled": true, "rules": [
+          { "id": 1, "color": "#1A8D37", "comparator": "<", "value": 40 },
+          { "id": 2, "color": "#F5D30F", "comparator": "<", "value": 60 },
+          { "id": 3, "color": "#C41A1A", "comparator": ">=", "value": 60 }
+        ] }],
+        "unitsOverrides": [{ "identifier": "error_pct", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 1, "suffix": "%", "delimiter": false }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "3": {
+      "title": "Checkout → Booking Conversion",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| fieldsKeep dt.rum.session.id\n| dedup dt.rum.session.id\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\"\n    | filter characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | summarize completed = count(), by: {dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"completion.\"\n| summarize total_checkouts = count(), completed = countIf(isNotNull(completion.completed))\n| fieldsAdd conversion_rate = 100.0 * toDouble(completed) / toDouble(total_checkouts)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "CONVERSION", "recordField": "conversion_rate", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "conversion_rate", "title": "", "isEnabled": true, "rules": [
+          { "id": 1, "color": "#C41A1A", "comparator": "<", "value": 30 },
+          { "id": 2, "color": "#F5D30F", "comparator": "<", "value": 60 },
+          { "id": 3, "color": "#1A8D37", "comparator": ">=", "value": 60 }
+        ] }],
+        "unitsOverrides": [{ "identifier": "conversion_rate", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 1, "suffix": "%", "delimiter": false }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "4": {
+      "title": "Bookings Page P95 Load",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"navigation\"\n| filter page.url.path == \"/your/bookings/\"\n| summarize p95_ms = percentile(duration, 95) / 1000000",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "P95 LOAD", "recordField": "p95_ms", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "p95_ms", "title": "", "isEnabled": true, "rules": [
+          { "id": 1, "color": "#1A8D37", "comparator": "<", "value": 5000 },
+          { "id": 2, "color": "#F5D30F", "comparator": "<", "value": 10000 },
+          { "id": 3, "color": "#C41A1A", "comparator": ">=", "value": 10000 }
+        ] }],
+        "unitsOverrides": [{ "identifier": "p95_ms", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": " ms", "delimiter": true }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+
+    "5": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"💰 Section 1 — Real-Time Revenue & Sales Overview\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "labelMode": "none", "isIconVisible": true, "prefixIcon": "ShoppingCartIcon", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "a", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": "#1A8D37", "comparator": "!=", "value": "0" }] }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "6": {
+      "title": "Completed Revenue",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| sort timestamp desc\n| dedup dt.rum.session.id\n| fieldsAdd total_num = toDouble(replaceString(replaceString(summary.total, \"$\", \"\"), \",\", \"\"))\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\"\n    | filter characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | summarize completed = count(), by: {dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"completion.\"\n| filter isNotNull(completion.completed)\n| summarize revenue = sum(total_num)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "CONFIRMED REVENUE", "recordField": "revenue", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "revenue", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": "#1A8D37", "comparator": ">=", "value": 0 }] }],
+        "unitsOverrides": [{ "identifier": "revenue", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 2, "suffix": " USD", "delimiter": true }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "7": {
+      "title": "Completed Bookings",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| fieldsKeep dt.rum.session.id\n| dedup dt.rum.session.id\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\"\n    | filter characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | summarize completed = count(), by: {dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"completion.\"\n| filter isNotNull(completion.completed)\n| summarize completions = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "BOOKINGS", "recordField": "completions", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "completions", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": "#1A8D37", "comparator": ">=", "value": 0 }] }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "8": {
+      "title": "Average Booking Value",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| sort timestamp desc\n| dedup dt.rum.session.id\n| fieldsAdd total_num = toDouble(replaceString(replaceString(summary.total, \"$\", \"\"), \",\", \"\"))\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\"\n    | filter characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | summarize completed = count(), by: {dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"completion.\"\n| filter isNotNull(completion.completed)\n| summarize aov = avg(total_num)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "AVG ORDER VALUE", "recordField": "aov", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "aov", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": "#1A8D37", "comparator": ">=", "value": 0 }] }],
+        "unitsOverrides": [{ "identifier": "aov", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 2, "suffix": " USD", "delimiter": true }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "9": {
+      "title": "Lost Revenue (Abandoned)",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| sort timestamp desc\n| dedup dt.rum.session.id\n| fieldsAdd total_num = toDouble(replaceString(replaceString(summary.total, \"$\", \"\"), \",\", \"\"))\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\"\n    | filter characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | summarize completed = count(), by: {dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"completion.\"\n| summarize checkout_revenue = sum(total_num), completed_revenue = sumIf(total_num, isNotNull(completion.completed))\n| fieldsAdd lost_revenue = checkout_revenue - completed_revenue",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "LOST REVENUE", "recordField": "lost_revenue", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "lost_revenue", "title": "", "isEnabled": true, "rules": [
+          { "id": 1, "color": "#1A8D37", "comparator": "<", "value": 5000 },
+          { "id": 2, "color": "#F5D30F", "comparator": "<", "value": 25000 },
+          { "id": 3, "color": "#C41A1A", "comparator": ">=", "value": 25000 }
+        ] }],
+        "unitsOverrides": [{ "identifier": "lost_revenue", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 2, "suffix": " USD", "delimiter": true }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "10": {
+      "title": "Revenue & Bookings Over Time",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| sort timestamp desc\n| dedup dt.rum.session.id\n| fieldsAdd total_num = toDouble(replaceString(replaceString(summary.total, \"$\", \"\"), \",\", \"\"))\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\"\n    | filter characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | summarize completed = count(), by: {dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"completion.\"\n| filter isNotNull(completion.completed)\n| makeTimeseries revenue = sum(total_num), bookings = count()",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "categoryAxisLabel": "",
+          "fieldMapping": { "timestamp": "timeframe", "leftAxisValues": ["revenue"], "rightAxisValues": ["bookings"] },
+          "leftYAxisLabel": "Revenue (USD)",
+          "rightYAxisLabel": "Bookings",
+          "legend": { "position": "bottom" }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [],
+        "unitsOverrides": [{ "identifier": "revenue", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 2, "suffix": " USD", "delimiter": true }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "11": {
+      "title": "Revenue by Package Type",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| sort timestamp desc\n| dedup dt.rum.session.id\n| fieldsAdd total_num = toDouble(replaceString(replaceString(summary.total, \"$\", \"\"), \",\", \"\"))\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\"\n    | filter characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | summarize completed = count(), by: {dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"completion.\"\n| filter isNotNull(completion.completed)\n| summarize revenue = sum(total_num), bookings = count(), by: {summary.packageType}\n| sort revenue desc",
+      "visualization": "pieChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": { "value": "revenue", "category": "summary.packageType" },
+          "legend": { "position": "right" }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [],
+        "unitsOverrides": [{ "identifier": "revenue", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 2, "suffix": " USD", "delimiter": true }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "12": {
+      "type": "markdown",
+      "content": "## 📈 Enhancing Revenue & Sales Visibility\n\n**Currently Available:** ✅ ISO Hotel booking revenue ✅ Average order value ✅ Completed booking counts ✅ Lost revenue from abandoned checkouts\n\n**Data Gaps & Recommended Enhancements:**\n\n| Gap | How to Fix | Business Value |\n|-----|-----------|----------------|\n| **No ticket sales revenue** | Deploy [TICKET_PROVIDER] checkout BizEvent GTM tag (designed & ready: `example/[ticket_provider]_gtm_tracking_tag.html`) | Track ticket sales alongside hotel revenue for **total revenue picture** |\n| **No web vs mobile vs partner channel split** | Implement UTM parameter passthrough from marketing campaigns into booking URLs | Attribute revenue to **Paid Search, Organic, Email, Direct, Affiliate** |\n| **No confirmed payment gateway data** | Integrate payment gateway success/failure events via Dynatrace BizEvents API ingest | Distinguish **checkout intent from actual confirmed revenue** |\n| **Weekly / monthly trending** | Already supported — change the dashboard **time picker** to 30d for monthly, 24h for daily | Instant trend visibility by adjusting timeframe |\n\n> **🚀 Quick Win:** The [TICKET_PROVIDER] ticket checkout tag has been designed and is ready for GTM deployment. Once published, ticket revenue data will flow automatically and can be added to this dashboard."
+    },
+
+    "13": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"🔄 Section 2 — Conversion Funnel Performance\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "labelMode": "none", "isIconVisible": true, "prefixIcon": "FunnelIcon", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "a", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": "#134FC9", "comparator": "!=", "value": "0" }] }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "14": {
+      "title": "🏠 Homepage Sessions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your-location/\"\n| summarize sessions = countDistinct(dt.rum.session.id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "HOMEPAGE", "recordField": "sessions", "colorThresholdTarget": "background", "sparklineSettings": { "isVisible": false }, "trend": { "isVisible": false } },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "sessions", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": {"Default": "#2AB6F4"}, "comparator": ">=", "value": 0 }] }],
+        "unitsOverrides": [{ "identifier": "sessions", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "15": {
+      "title": "📅 Bookings SPA Sessions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your/bookings/\"\n| summarize sessions = countDistinct(dt.rum.session.id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "BOOKINGS", "recordField": "sessions", "colorThresholdTarget": "background", "sparklineSettings": { "isVisible": false }, "trend": { "isVisible": false } },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "sessions", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": {"Default": "#FF6900"}, "comparator": ">=", "value": 0 }] }],
+        "unitsOverrides": [{ "identifier": "sessions", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "16": {
+      "title": "🛒 Checkout Sessions",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| summarize checkouts = countDistinct(dt.rum.session.id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "CHECKOUT", "recordField": "checkouts", "colorThresholdTarget": "background", "sparklineSettings": { "isVisible": false }, "trend": { "isVisible": false } },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "checkouts", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": {"Default": "#7C38BC"}, "comparator": ">=", "value": 0 }] }],
+        "unitsOverrides": [{ "identifier": "checkouts", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "17": {
+      "title": "✅ Confirmed Bookings",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| summarize confirmations = countDistinct(dt.rum.session.id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "CONFIRMED", "recordField": "confirmations", "colorThresholdTarget": "background", "sparklineSettings": { "isVisible": false }, "trend": { "isVisible": false } },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "confirmations", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": {"Default": "#1A8D37"}, "comparator": ">=", "value": 0 }] }],
+        "unitsOverrides": [{ "identifier": "confirmations", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1741607700000 }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "18": {
+      "title": "Checkout → Confirmation Rate",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| fieldsKeep dt.rum.session.id\n| dedup dt.rum.session.id\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\"\n    | filter characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | summarize completed = count(), by: {dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"completion.\"\n| summarize total_checkouts = count(), completed = countIf(isNotNull(completion.completed))\n| fieldsAdd conversion = 100.0 * toDouble(completed) / toDouble(total_checkouts), dropoff = 100.0 * toDouble(total_checkouts - completed) / toDouble(total_checkouts)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "CONVERSION", "recordField": "conversion", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "conversion", "title": "", "isEnabled": true, "rules": [
+          { "id": 1, "color": "#C41A1A", "comparator": "<", "value": 30 },
+          { "id": 2, "color": "#F5D30F", "comparator": "<", "value": 60 },
+          { "id": 3, "color": "#1A8D37", "comparator": ">=", "value": 60 }
+        ] }],
+        "unitsOverrides": [{ "identifier": "conversion", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 1, "suffix": "%", "delimiter": false }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "19": {
+      "title": "Completed vs Abandoned Checkouts Over Time",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| sort timestamp desc\n| dedup dt.rum.session.id\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\"\n    | filter characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | summarize completed = count(), by: {dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"completion.\"\n| fieldsAdd status = if(isNotNull(completion.completed), \"Completed\", else: \"Abandoned\")\n| makeTimeseries completed = countIf(status == \"Completed\"), abandoned = countIf(status == \"Abandoned\")",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "categoryAxisLabel": "",
+          "fieldMapping": { "timestamp": "timeframe", "leftAxisValues": ["completed", "abandoned"] },
+          "leftYAxisLabel": "Sessions",
+          "legend": { "position": "bottom" },
+          "colorOverrides": [
+            { "seriesName": "completed", "color": "#1A8D37" },
+            { "seriesName": "abandoned", "color": "#C41A1A" }
+          ]
+        },
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "20": {
+      "type": "markdown",
+      "content": "## 🔄 Enhancing Conversion Funnel Visibility\n\n**Currently Available:** ✅ Page-level funnel (Homepage → Bookings SPA → Checkout → Confirmation) ✅ Checkout-to-completion conversion rate ✅ Completed vs abandoned split over time\n\n**Data Gaps & Recommended Enhancements:**\n\n| Gap | How to Fix | Business Value |\n|-----|-----------|----------------|\n| **No step-level drop-off within booking SPA** | Deploy BizEvents at each wizard step (Hotels → Rooms → Extras → Checkout) via GTM or inline JS | Identify **exactly where users abandon** within the 4-step booking wizard |\n| **No basket add/remove events** | Instrument add-to-cart and remove-from-cart actions as BizEvents | Measure **basket engagement** and identify friction points |\n| **No ticket funnel tracking** | Deploy [TICKET_PROVIDER] ticket BizEvent tag (ready: `example/[ticket_provider]_gtm_tracking_tag.html`) | Track the complete **ticket purchase funnel** alongside hotel bookings |\n| **No mobile vs desktop conversion comparison** | Add `device.type` split to funnel queries (data is already available on sessions) | Compare **platform-specific conversion rates** to prioritise mobile/desktop fixes |\n| **No payment failure tracking** | Capture payment attempt + payment failure events from the checkout form | Quantify **payment-stage abandonment** vs voluntary abandonment |\n\n> **💡 Tip:** The funnel currently shows page-level drops. The ISO booking SPA runs within a single URL (`/your/bookings/`), so individual wizard steps (Select Hotel → Select Room → Add Extras → Checkout) are invisible without step-level BizEvents."
+    },
+
+    "21": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"📢 Section 3 — Channel & Campaign Effectiveness\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "labelMode": "none", "isIconVisible": true, "prefixIcon": "WebApplicationIcon", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "a", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": "#7C38BC", "comparator": "!=", "value": "0" }] }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "22": {
+      "title": "Sessions by Device Type",
+      "type": "data",
+      "query": "fetch user.sessions, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter frontend.name == \"[APP_NAME]\"\n| summarize sessions = count(), by: {device.type}\n| sort sessions desc",
+      "visualization": "pieChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": { "value": "sessions", "category": "device.type" },
+          "legend": { "position": "right" }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "23": {
+      "title": "Revenue by Device Type",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| sort timestamp desc\n| dedup dt.rum.session.id\n| fieldsAdd total_num = toDouble(replaceString(replaceString(summary.total, \"$\", \"\"), \",\", \"\"))\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\"\n    | filter characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | summarize completed = count(), by: {dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"completion.\"\n| filter isNotNull(completion.completed)\n| summarize revenue = sum(total_num), bookings = count(), by: {device.type}\n| sort revenue desc",
+      "visualization": "pieChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": { "value": "revenue", "category": "device.type" },
+          "legend": { "position": "right" }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [],
+        "unitsOverrides": [{ "identifier": "revenue", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 2, "suffix": " USD", "delimiter": true }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "24": {
+      "title": "Bookings by Country",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| sort timestamp desc\n| dedup dt.rum.session.id\n| fieldsAdd total_num = toDouble(replaceString(replaceString(summary.total, \"$\", \"\"), \",\", \"\"))\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\"\n    | filter characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | summarize completed = count(), by: {dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"completion.\"\n| filter isNotNull(completion.completed)\n| summarize revenue = sum(total_num), bookings = count(), by: {geo.country.name}\n| sort revenue desc\n| limit 10",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "categoryAxisLabel": "Country",
+          "fieldMapping": { "categoryValues": ["geo.country.name"], "leftAxisValues": ["revenue"], "rightAxisValues": ["bookings"] },
+          "leftYAxisLabel": "Revenue (USD)",
+          "rightYAxisLabel": "Bookings",
+          "legend": { "position": "bottom" }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [],
+        "unitsOverrides": [{ "identifier": "revenue", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 2, "suffix": " USD", "delimiter": true }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "25": {
+      "type": "markdown",
+      "content": "## 📢 Enhancing Channel & Campaign Visibility\n\n**Currently Available:** ✅ Device type split (mobile / desktop / tablet) ✅ Geographic source of bookings ✅ Sales channel code from booking URL\n\n**Data Gaps & Recommended Enhancements:**\n\n| Gap | How to Fix | Business Value |\n|-----|-----------|----------------|\n| **No marketing source attribution** | Implement consistent **UTM parameter tagging** (`utmSource`, `utmMedium`, `utmCampaign`) on all marketing URLs — ISO BizEvent schema already captures these fields | Attribute revenue to **Paid Search, Organic, Email, Direct, Social, Affiliate** channels |\n| **No ROAS (Return on Ad Spend)** | Integrate marketing platform spend data (Google Ads, Meta, etc.) via **Dynatrace BizEvents API** as daily cost events | Calculate **cost per acquisition** and **return on ad spend** per campaign |\n| **No referrer / landing page tracking** | Capture `document.referrer` and landing page URL as RUM session properties | Identify **top-performing landing pages** and **organic vs paid traffic mix** |\n| **No email/affiliate channel tracking** | Ensure all email and affiliate links include UTM parameters | Measure **email campaign ROI** and **affiliate partner performance** |\n\n> **💡 The Foundation Exists:** The ISO BizEvent schema already includes `url.utmSource`, `url.utmMedium`, and `url.utmCampaign` fields. Once marketing teams consistently tag campaign URLs with UTM parameters, channel attribution data will flow automatically into this dashboard without any Dynatrace configuration changes."
+    },
+
+    "26": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"⚡ Section 4 — Digital Experience Impact on Sales\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "labelMode": "none", "isIconVisible": true, "prefixIcon": "TrendingUpIcon", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "a", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": "#F5D30F", "comparator": "!=", "value": "0" }] }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "27": {
+      "title": "Bookings Page 1P Errors",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| filter page.url.path == \"/your/bookings/\"\n| filter url.provider == \"first_party\"\n| summarize errors = count(), sessions_affected = countDistinct(dt.rum.session.id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "1P ERRORS", "recordField": "errors", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "errors", "title": "", "isEnabled": true, "rules": [
+          { "id": 1, "color": "#1A8D37", "comparator": "<", "value": 500 },
+          { "id": 2, "color": "#F5D30F", "comparator": "<", "value": 2000 },
+          { "id": 3, "color": "#C41A1A", "comparator": ">=", "value": 2000 }
+        ] }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "28": {
+      "title": "Sessions with Errors %",
+      "type": "data",
+      "query": "fetch user.sessions, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter frontend.name == \"[APP_NAME]\"\n| summarize total = count(), with_errors = countIf(error.count > 0)\n| fieldsAdd error_session_pct = 100.0 * toDouble(with_errors) / toDouble(total)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "SESSIONS W/ ERRORS", "recordField": "error_session_pct", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "error_session_pct", "title": "", "isEnabled": true, "rules": [
+          { "id": 1, "color": "#1A8D37", "comparator": "<", "value": 40 },
+          { "id": 2, "color": "#F5D30F", "comparator": "<", "value": 60 },
+          { "id": 3, "color": "#C41A1A", "comparator": ">=", "value": 60 }
+        ] }],
+        "unitsOverrides": [{ "identifier": "error_session_pct", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 1, "suffix": "%", "delimiter": false }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "29": {
+      "title": "Site-Wide P75 LCP",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"view_summary\"\n| filter isNotNull(web_vitals.largest_contentful_paint)\n| summarize p75_lcp_ms = percentile(web_vitals.largest_contentful_paint, 75) / 1000000",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "P75 LCP", "recordField": "p75_lcp_ms", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "p75_lcp_ms", "title": "", "isEnabled": true, "rules": [
+          { "id": 1, "color": "#1A8D37", "comparator": "<", "value": 2500 },
+          { "id": 2, "color": "#F5D30F", "comparator": "<", "value": 4000 },
+          { "id": 3, "color": "#C41A1A", "comparator": ">=", "value": 4000 }
+        ] }],
+        "unitsOverrides": [{ "identifier": "p75_lcp_ms", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": " ms", "delimiter": true }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "30": {
+      "title": "First-Party Errors Over Time",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| filter url.provider == \"first_party\"\n| makeTimeseries first_party_errors = count()",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "categoryAxisLabel": "",
+          "fieldMapping": { "timestamp": "timeframe", "leftAxisValues": ["first_party_errors"] },
+          "leftYAxisLabel": "Errors",
+          "legend": { "position": "bottom" },
+          "colorOverrides": [{ "seriesName": "first_party_errors", "color": "#C41A1A" }]
+        },
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "31": {
+      "title": "Core Web Vitals by Page (Top 10)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"view_summary\"\n| filter isNotNull(web_vitals.largest_contentful_paint)\n| summarize\n    Samples = count(),\n    P75_LCP_ms = percentile(web_vitals.largest_contentful_paint, 75) / 1000000,\n    P75_INP_ms = percentile(web_vitals.interaction_to_next_paint, 75) / 1000000,\n    P75_CLS = percentile(web_vitals.cumulative_layout_shift, 75),\n    P75_TTFB_ms = percentile(web_vitals.time_to_first_byte, 75) / 1000000,\n    by: {view.detected_name}\n| filter Samples >= 30\n| sort P75_LCP_ms desc\n| limit 10",
+      "visualization": "table",
+      "visualizationSettings": {
+        "table": { "enableLineWrap": true, "hiddenColumns": [], "lineWrapIds": [], "firstVisibleRowIndex": 0, "columnWidths": {} },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          { "id": 1, "field": "P75_LCP_ms", "title": "", "isEnabled": true, "rules": [
+            { "id": 1, "color": "#1A8D37", "comparator": "<", "value": 2500 },
+            { "id": 2, "color": "#F5D30F", "comparator": "<", "value": 4000 },
+            { "id": 3, "color": "#C41A1A", "comparator": ">=", "value": 4000 }
+          ] },
+          { "id": 2, "field": "P75_INP_ms", "title": "", "isEnabled": true, "rules": [
+            { "id": 1, "color": "#1A8D37", "comparator": "<", "value": 200 },
+            { "id": 2, "color": "#F5D30F", "comparator": "<", "value": 500 },
+            { "id": 3, "color": "#C41A1A", "comparator": ">=", "value": 500 }
+          ] },
+          { "id": 3, "field": "P75_CLS", "title": "", "isEnabled": true, "rules": [
+            { "id": 1, "color": "#1A8D37", "comparator": "<", "value": 0.1 },
+            { "id": 2, "color": "#F5D30F", "comparator": "<", "value": 0.25 },
+            { "id": 3, "color": "#C41A1A", "comparator": ">=", "value": 0.25 }
+          ] }
+        ],
+        "unitsOverrides": [
+          { "identifier": "P75_LCP_ms", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": " ms", "delimiter": true },
+          { "identifier": "P75_INP_ms", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": " ms", "delimiter": true },
+          { "identifier": "P75_TTFB_ms", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": " ms", "delimiter": true }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "32": {
+      "type": "markdown",
+      "content": "## ⚡ Enhancing Digital Experience Impact Visibility\n\n**Currently Available:** ✅ Core Web Vitals (LCP, INP, CLS, TTFB) per page ✅ First-party error counts and trends ✅ Bookings page load time (P95) ✅ Session error rates ✅ Lost revenue from abandoned checkouts\n\n**Data Gaps & Recommended Enhancements:**\n\n| Gap | How to Fix | Business Value |\n|-----|-----------|----------------|\n| **No backend APM correlation** | Deploy Dynatrace **OneAgent** on the ISO booking engine servers (`vacations.example.com`) | Correlate **server-side latency** (API 500s, slow queries) with revenue impact |\n| **No synthetic monitoring** | Create **Dynatrace Synthetic Browser Monitors** for the booking flow (homepage → hotel select → checkout → payment) | Detect **outages in real-time** before users are impacted |\n| **No performance ↔ conversion correlation** | Build SLOs on checkout latency + error rate, then correlate SLO violations with conversion dips | Quantify **'every 1s of latency = X% conversion drop'** |\n| **No payment gateway uptime** | Instrument payment provider health checks as synthetic monitors or BizEvents | Track **payment gateway availability** and failure rates |\n| **No estimated revenue lost to slowness** | Correlate performance percentile buckets with conversion rates per session | Calculate **'sessions > 5s load had Y% lower conversion = $Z lost'** |\n\n> **💡 Key Insight:** The bookings page currently shows ~5,400 first-party errors/day affecting ~1,500 sessions. Top errors include booking API 500s (hotel/list, verifyAnnualPassAccess) and a missing image (loader.svg). Fixing these could directly improve conversion."
+    },
+
+    "33": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"👥 Section 5 — Customer & Booking Insights\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "labelMode": "none", "isIconVisible": true, "prefixIcon": "SuccessIcon", "colorThresholdTarget": "background" },
+        "autoSelectVisualization": false,
+        "thresholds": [{ "id": 1, "field": "a", "title": "", "isEnabled": true, "rules": [{ "id": 1, "color": "#FF6900", "comparator": "!=", "value": "0" }] }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "34": {
+      "title": "Booking Volume Over Time",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| sort timestamp desc\n| dedup dt.rum.session.id\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\"\n    | filter characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | summarize completed = count(), by: {dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"completion.\"\n| filter isNotNull(completion.completed)\n| makeTimeseries bookings = count()",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "categoryAxisLabel": "",
+          "fieldMapping": { "timestamp": "timeframe", "leftAxisValues": ["bookings"] },
+          "leftYAxisLabel": "Completed Bookings",
+          "legend": { "position": "bottom" },
+          "colorOverrides": [{ "seriesName": "bookings", "color": "#1A8D37" }]
+        },
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "35": {
+      "title": "Revenue by Room Type",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| sort timestamp desc\n| dedup dt.rum.session.id\n| fieldsAdd total_num = toDouble(replaceString(replaceString(summary.total, \"$\", \"\"), \",\", \"\"))\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\"\n    | filter characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | summarize completed = count(), by: {dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"completion.\"\n| filter isNotNull(completion.completed)\n| summarize revenue = sum(total_num), bookings = count(), by: {summary.roomType}\n| sort revenue desc",
+      "visualization": "pieChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": { "value": "revenue", "category": "summary.roomType" },
+          "legend": { "position": "right" }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [],
+        "unitsOverrides": [{ "identifier": "revenue", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 2, "suffix": " USD", "delimiter": true }]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "36": {
+      "title": "Top Add-On Services Included",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| filter isNotNull(summary.services) and summary.services != \"\"\n| sort timestamp desc\n| dedup dt.rum.session.id\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\"\n    | filter characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | summarize completed = count(), by: {dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"completion.\"\n| filter isNotNull(completion.completed)\n| expand service = splitString(summary.services, \", \")\n| summarize count = count(), by: {service}\n| sort count desc",
+      "visualization": "pieChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": { "value": "count", "category": "service" },
+          "legend": { "position": "right" }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "37": {
+      "title": "Revenue by Sales Channel",
+      "type": "data",
+      "query": "fetch bizevents, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter event.type == \"com.example.checkout.summary\"\n| sort timestamp desc\n| dedup dt.rum.session.id\n| fieldsAdd total_num = toDouble(replaceString(replaceString(summary.total, \"$\", \"\"), \",\", \"\"))\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\"\n    | filter characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | summarize completed = count(), by: {dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"completion.\"\n| filter isNotNull(completion.completed)\n| summarize revenue = sum(total_num), bookings = count(), avg_order = avg(total_num), by: {url.salesChannelCode}\n| sort revenue desc",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "categoryAxisLabel": "Sales Channel",
+          "fieldMapping": { "categoryValues": ["url.salesChannelCode"], "leftAxisValues": ["revenue"], "rightAxisValues": ["bookings"] },
+          "leftYAxisLabel": "Revenue (USD)",
+          "rightYAxisLabel": "Bookings",
+          "legend": { "position": "bottom" }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [],
+        "unitsOverrides": [
+          { "identifier": "revenue", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 2, "suffix": " USD", "delimiter": true },
+          { "identifier": "avg_order", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 2, "suffix": " USD", "delimiter": true }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "38": {
+      "type": "markdown",
+      "content": "## 👥 Enhancing Customer & Booking Insights\n\n**Currently Available:** ✅ Booking volume trends ✅ Revenue by room type (themed rooms) ✅ Included services / add-ons per booking ✅ Revenue by sales channel code ✅ Geographic source of bookings\n\n**Data Gaps & Recommended Enhancements:**\n\n| Gap | How to Fix | Business Value |\n|-----|-----------|----------------|\n| **No ticket type breakdown** | Deploy [TICKET_PROVIDER] ticket BizEvent tag — captures ticket type (1-Day, 2-Day, FastTrack, premium add-ons) | Understand **ticket product mix** and **premium upsell rates** |\n| **No occupancy / guest mix analysis** | Parse the `url.occupancy` JSON from BizEvents in DQL (`parse(url.occupancy, \"JSON\")`) | Analyse **room occupancy patterns** (adults vs children, room count) for demand planning |\n| **No peak booking time analysis** | Already available — add hourly breakdown tile using `formatTimestamp(timestamp, \"HH\")` | Identify **peak booking hours** for staffing and server capacity planning |\n| **No travel date / demand forecasting** | Parse `url.start` and `url.end` fields from BizEvents to extract **travel dates** (vs booking dates) | Build **forward-looking demand calendars** showing peak stay periods |\n| **No repeat customer identification** | Implement `dtrum.identifyUser(email)` on logged-in users or post-booking confirmation | Analyse **repeat vs new customer mix** and **loyalty booking patterns** |\n| **No stay duration analysis** | Calculate `dateDiff(toTimestamp(url.end), toTimestamp(url.start))` in DQL | Understand **1-night vs 2-night vs 3-night stay preferences** |\n\n> **💡 Rich Data Potential:** The ISO Checkout BizEvent already captures extensive booking data (package type, room type, services, dates, occupancy, prices). Many of these enhancements only require DQL parsing of existing fields — no new instrumentation needed."
+    }
+  },
+  "layouts": {
+    "0":  { "x": 0,  "y": 0,  "w": 24, "h": 6 },
+    "1":  { "x": 0,  "y": 6,  "w": 6,  "h": 3 },
+    "2":  { "x": 6,  "y": 6,  "w": 6,  "h": 3 },
+    "3":  { "x": 12, "y": 6,  "w": 6,  "h": 3 },
+    "4":  { "x": 18, "y": 6,  "w": 6,  "h": 3 },
+
+    "5":  { "x": 0,  "y": 9,  "w": 24, "h": 1 },
+    "6":  { "x": 0,  "y": 10, "w": 6,  "h": 3 },
+    "7":  { "x": 6,  "y": 10, "w": 6,  "h": 3 },
+    "8":  { "x": 12, "y": 10, "w": 6,  "h": 3 },
+    "9":  { "x": 18, "y": 10, "w": 6,  "h": 3 },
+    "10": { "x": 0,  "y": 13, "w": 12, "h": 6 },
+    "11": { "x": 12, "y": 13, "w": 12, "h": 6 },
+    "12": { "x": 0,  "y": 19, "w": 24, "h": 7 },
+
+    "13": { "x": 0,  "y": 26, "w": 24, "h": 1 },
+    "14": { "x": 0,  "y": 27, "w": 5,  "h": 3 },
+    "15": { "x": 5,  "y": 27, "w": 5,  "h": 3 },
+    "16": { "x": 10, "y": 27, "w": 4,  "h": 3 },
+    "17": { "x": 14, "y": 27, "w": 5,  "h": 3 },
+    "18": { "x": 19, "y": 27, "w": 5,  "h": 3 },
+    "19": { "x": 0,  "y": 30, "w": 24, "h": 6 },
+    "20": { "x": 0,  "y": 36, "w": 24, "h": 8 },
+
+    "21": { "x": 0,  "y": 44, "w": 24, "h": 1 },
+    "22": { "x": 0,  "y": 45, "w": 8,  "h": 6 },
+    "23": { "x": 8,  "y": 45, "w": 8,  "h": 6 },
+    "24": { "x": 16, "y": 45, "w": 8,  "h": 6 },
+    "25": { "x": 0,  "y": 51, "w": 24, "h": 8 },
+
+    "26": { "x": 0,  "y": 59, "w": 24, "h": 1 },
+    "27": { "x": 0,  "y": 60, "w": 8,  "h": 3 },
+    "28": { "x": 8,  "y": 60, "w": 8,  "h": 3 },
+    "29": { "x": 16, "y": 60, "w": 8,  "h": 3 },
+    "30": { "x": 0,  "y": 63, "w": 12, "h": 6 },
+    "31": { "x": 12, "y": 63, "w": 12, "h": 6 },
+    "32": { "x": 0,  "y": 69, "w": 24, "h": 8 },
+
+    "33": { "x": 0,  "y": 77, "w": 24, "h": 1 },
+    "34": { "x": 0,  "y": 78, "w": 12, "h": 6 },
+    "35": { "x": 12, "y": 78, "w": 12, "h": 6 },
+    "36": { "x": 0,  "y": 84, "w": 12, "h": 6 },
+    "37": { "x": 12, "y": 84, "w": 12, "h": 6 },
+    "38": { "x": 0,  "y": 90, "w": 24, "h": 8 }
+  },
+  "importedWithCode": false,
+  "settings": {
+    "defaultTimeframe": {
+      "value": {
+        "from": "now()-7d",
+        "to": "now()"
+      },
+      "enabled": true
+    }
+  }
+}

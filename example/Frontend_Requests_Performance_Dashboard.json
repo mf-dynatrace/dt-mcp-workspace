@@ -1,0 +1,2378 @@
+{
+  "version": 20,
+  "variables": [],
+  "tiles": {
+    "0": {
+      "type": "markdown",
+      "content": "# \ud83c\udf10 [CLIENT_NAME] [LOCATION] \u2014 Frontend Requests & Performance\n\n**Application:** [APP_NAME] (`APPLICATION-XXXXXXXXXXXX`) | **Data Source:** Gen 3 RUM (`user.events`)\n\nMonitors **request load** (volume, throughput) and **response time performance** (avg, p50, p90, p95) for all XHR/fetch/resource requests made by the frontend.\nBreaks down by first-party vs third-party, top domains, device types, and trends over time.\n\n> **Tip:** Use the timeframe selector to adjust the analysis window. Default queries use 24h."
+    },
+    "1": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83d\udcca KPI Summary \u2014 Request Load & Performance\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "DashboardIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#134FC9",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "2": {
+      "title": "\ud83c\udf10 Total Requests",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| summarize total_requests = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "REQUESTS (24h)",
+          "recordField": "total_requests",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": {
+            "isVisible": false
+          },
+          "trend": {
+            "isVisible": false
+          }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "total_requests",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#2AB6F4"
+                },
+                "comparator": ">=",
+                "value": 0
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "total_requests",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "3": {
+      "title": "\ud83d\udc64 Active Sessions",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| summarize sessions = countDistinct(dt.rum.session.id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "SESSIONS (24h)",
+          "recordField": "sessions",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": {
+            "isVisible": false
+          },
+          "trend": {
+            "isVisible": false
+          }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "sessions",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#7C38BC"
+                },
+                "comparator": ">=",
+                "value": 0
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "sessions",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "4": {
+      "title": "\u26a1 Avg Response Time",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| summarize avg_ms = avg(duration) / 1000000",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "AVG RESPONSE TIME",
+          "recordField": "avg_ms",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": {
+            "isVisible": false
+          },
+          "trend": {
+            "isVisible": false
+          }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "avg_ms",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">=",
+                "value": 1000
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": ">=",
+                "value": 500
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "<",
+                "value": 500
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "avg_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "5": {
+      "title": "\ud83d\udd3a P95 Response Time",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| summarize p95_ms = percentile(duration, 95) / 1000000",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "P95 RESPONSE TIME",
+          "recordField": "p95_ms",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": {
+            "isVisible": false
+          },
+          "trend": {
+            "isVisible": false
+          }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "p95_ms",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {
+                  "Default": "#C62239"
+                },
+                "comparator": ">=",
+                "value": 3000
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "#F8B000"
+                },
+                "comparator": ">=",
+                "value": 1000
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "#4FD5B0"
+                },
+                "comparator": "<",
+                "value": 1000
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "p95_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "6": {
+      "title": "\ud83d\udcc8 Request Volume Over Time",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| makeTimeseries requests = count(), interval:30m",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "colorPalette": "blue",
+          "legend": {
+            "hidden": true
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "7": {
+      "title": "\u23f1\ufe0f Response Time Over Time (Avg & P95)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| makeTimeseries avg_ms = avg(duration), p95_ms = percentile(duration, 95), interval:30m\n| fieldsAdd avg_ms = avg_ms[] / 1000000, p95_ms = p95_ms[] / 1000000",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect",
+          "seriesOverrides": [
+            {
+              "seriesId": "avg_ms",
+              "override": {
+                "color": "#2AB6F4"
+              }
+            },
+            {
+              "seriesId": "p95_ms",
+              "override": {
+                "color": "#C62239"
+              }
+            }
+          ]
+        },
+        "autoSelectVisualization": false,
+        "unitsOverrides": [
+          {
+            "identifier": "avg_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "p95_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "8": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83c\udfe2 First-Party vs Third-Party Request Breakdown\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "CompareIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#134FC9",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "9": {
+      "title": "\ud83d\udcca Requests by Provider Type",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| summarize \n    requests = count(),\n    avg_ms = avg(duration) / 1000000,\n    p95_ms = percentile(duration, 95) / 1000000,\n    sessions = countDistinct(dt.rum.session.id),\n    by:{url.provider}\n| sort requests desc",
+      "visualization": "pieChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "categoricalBarChart": {
+            "categoryAxisLabel": "Provider",
+            "valueAxisLabel": "Requests"
+          }
+        },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "10": {
+      "title": "\u23f1\ufe0f Response Time by Provider (Avg & P95 ms)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| summarize \n    requests = count(),\n    Avg_ms = avg(duration) / 1000000,\n    P50_ms = percentile(duration, 50) / 1000000,\n    P90_ms = percentile(duration, 90) / 1000000,\n    P95_ms = percentile(duration, 95) / 1000000,\n    by:{url.provider}\n| sort requests desc",
+      "visualization": "categoricalBarChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "categoricalBarChart": {
+            "categoryAxisLabel": "Provider",
+            "valueAxisLabel": "Response Time (ms)"
+          }
+        },
+        "autoSelectVisualization": false,
+        "unitsOverrides": [
+          {
+            "identifier": "Avg_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "P50_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "P90_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "P95_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "11": {
+      "title": "\ud83d\udcc8 Request Volume by Provider Over Time",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| makeTimeseries requests = count(), by:{url.provider}, interval:30m",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "12": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83d\udd17 Top Request Domains \u2014 Load & Performance\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "WebApplicationIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#134FC9",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "13": {
+      "title": "\ud83d\udd17 Top 15 Domains by Request Volume",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| summarize \n    Requests = count(),\n    Avg_ms = avg(duration) / 1000000,\n    P95_ms = percentile(duration, 95) / 1000000,\n    by:{url.domain}\n| sort Requests desc\n| limit 15",
+      "visualization": "table",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "table": {
+          "enableLineWrap": true,
+          "hiddenColumns": [],
+          "lineWrapIds": [],
+          "firstVisibleRowIndex": 0,
+          "columnWidths": {}
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "Requests",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "Avg_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "P95_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "14": {
+      "title": "\ud83d\udcca Top 10 Domains \u2014 Request Volume",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| summarize Requests = count(), by:{url.domain}\n| sort Requests desc\n| limit 10",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "categoricalBarChart": {
+            "categoryAxisLabel": "Domain",
+            "valueAxisLabel": "Requests"
+          }
+        },
+        "autoSelectVisualization": false,
+        "unitsOverrides": [
+          {
+            "identifier": "Requests",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "15": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83d\udcf1 Device & Browser Breakdown\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "DeviceIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#134FC9",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "16": {
+      "title": "\ud83d\udcf1 Request Volume by Device Type",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| summarize \n    Requests = count(),\n    Avg_ms = avg(duration) / 1000000,\n    P95_ms = percentile(duration, 95) / 1000000,\n    by:{device.type}\n| sort Requests desc",
+      "visualization": "pieChart",
+      "visualizationSettings": {
+        "chartSettings": {},
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "17": {
+      "title": "\ud83c\udf0d Response Time by Device Type",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| summarize \n    Requests = count(),\n    Avg_ms = avg(duration) / 1000000,\n    P50_ms = percentile(duration, 50) / 1000000,\n    P90_ms = percentile(duration, 90) / 1000000,\n    P95_ms = percentile(duration, 95) / 1000000,\n    by:{device.type}\n| sort Requests desc",
+      "visualization": "categoricalBarChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "categoricalBarChart": {
+            "categoryAxisLabel": "Device",
+            "valueAxisLabel": "Response Time (ms)"
+          }
+        },
+        "autoSelectVisualization": false,
+        "unitsOverrides": [
+          {
+            "identifier": "Avg_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "P50_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "P90_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "P95_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "18": {
+      "title": "\ud83c\udf10 Top Browsers by Request Volume & Performance",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| summarize \n    Requests = count(),\n    Avg_ms = avg(duration) / 1000000,\n    P95_ms = percentile(duration, 95) / 1000000,\n    by:{browser.name}\n| sort Requests desc\n| limit 10",
+      "visualization": "table",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "table": {
+          "enableLineWrap": true,
+          "hiddenColumns": [],
+          "lineWrapIds": [],
+          "firstVisibleRowIndex": 0,
+          "columnWidths": {}
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "Requests",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "Avg_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "P95_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "19": {
+      "title": "\ud83d\udcca Requests per Session by Device Type Over Time",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| makeTimeseries requests = count(), by:{device.type}, interval:1h",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "20": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83d\udd0d First-Party Domain Investigation \u2014 Request Volume & Response Time Spikes\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "SearchIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#C62239",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "21": {
+      "title": "\ud83d\udcc8 First-Party Request Volume by Domain Over Time",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\" and url.provider == \"first_party\"\n| makeTimeseries requests = count(), by:{url.domain}, interval:15m",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "22": {
+      "title": "\u26a1 First-Party P95 Response Time by Domain Over Time",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\" and url.provider == \"first_party\"\n| makeTimeseries p95_ms = percentile(duration, 95), by:{url.domain}, interval:15m\n| fieldsAdd p95_ms = p95_ms[] / 1000000",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false,
+        "unitsOverrides": [
+          {
+            "identifier": "p95_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "23": {
+      "title": "\u23f1\ufe0f First-Party Avg Response Time by Domain Over Time",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\" and url.provider == \"first_party\"\n| makeTimeseries avg_ms = avg(duration), by:{url.domain}, interval:15m\n| fieldsAdd avg_ms = avg_ms[] / 1000000",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false,
+        "unitsOverrides": [
+          {
+            "identifier": "avg_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "24": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83c\udfe0 www.example.com \u2014 Request Deep Dive (Highest Volume First-Party)\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "SearchIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#C62239",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "25": {
+      "title": "\ud83d\udcc8 www.example.com \u2014 Request Volume (15m intervals)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\" and url.domain == \"www.example.com\"\n| makeTimeseries requests = count(), interval:15m",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "colorPalette": "blue",
+          "legend": {
+            "hidden": true
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "26": {
+      "title": "\u26a1 www.example.com \u2014 Response Time (Avg / P90 / P95)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\" and url.domain == \"www.example.com\"\n| makeTimeseries avg_ms = avg(duration), p90_ms = percentile(duration, 90), p95_ms = percentile(duration, 95), interval:15m\n| fieldsAdd avg_ms = avg_ms[] / 1000000, p90_ms = p90_ms[] / 1000000, p95_ms = p95_ms[] / 1000000",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect",
+          "seriesOverrides": [
+            {
+              "seriesId": "avg_ms",
+              "override": {
+                "color": "#2AB6F4"
+              }
+            },
+            {
+              "seriesId": "p90_ms",
+              "override": {
+                "color": "#F8B000"
+              }
+            },
+            {
+              "seriesId": "p95_ms",
+              "override": {
+                "color": "#C62239"
+              }
+            }
+          ]
+        },
+        "autoSelectVisualization": false,
+        "unitsOverrides": [
+          {
+            "identifier": "avg_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "p90_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "p95_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "27": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83c\udfab Ticketing (tickets.example.com) \u2014 Request Deep Dive\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "SearchIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#C62239",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "28": {
+      "title": "\ud83d\udcc8 Ticketing \u2014 Request Volume (15m intervals)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\" and url.domain == \"tickets.example.com\"\n| makeTimeseries requests = count(), interval:15m",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "colorPalette": "purple",
+          "legend": {
+            "hidden": true
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "29": {
+      "title": "\u26a1 Ticketing \u2014 Response Time (Avg / P90 / P95)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\" and url.domain == \"tickets.example.com\"\n| makeTimeseries avg_ms = avg(duration), p90_ms = percentile(duration, 90), p95_ms = percentile(duration, 95), interval:15m\n| fieldsAdd avg_ms = avg_ms[] / 1000000, p90_ms = p90_ms[] / 1000000, p95_ms = p95_ms[] / 1000000",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect",
+          "seriesOverrides": [
+            {
+              "seriesId": "avg_ms",
+              "override": {
+                "color": "#2AB6F4"
+              }
+            },
+            {
+              "seriesId": "p90_ms",
+              "override": {
+                "color": "#F8B000"
+              }
+            },
+            {
+              "seriesId": "p95_ms",
+              "override": {
+                "color": "#C62239"
+              }
+            }
+          ]
+        },
+        "autoSelectVisualization": false,
+        "unitsOverrides": [
+          {
+            "identifier": "avg_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "p90_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "p95_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "30": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83c\udfe8 Vacations (vacations.example.com) \u2014 Request Deep Dive\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "SearchIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#C62239",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "31": {
+      "title": "\ud83d\udcc8 Vacations \u2014 Request Volume (15m intervals)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\" and url.domain == \"vacations.example.com\"\n| makeTimeseries requests = count(), interval:15m",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "colorPalette": "green",
+          "legend": {
+            "hidden": true
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "32": {
+      "title": "\u26a1 Vacations \u2014 Response Time (Avg / P90 / P95)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\" and url.domain == \"vacations.example.com\"\n| makeTimeseries avg_ms = avg(duration), p90_ms = percentile(duration, 90), p95_ms = percentile(duration, 95), interval:15m\n| fieldsAdd avg_ms = avg_ms[] / 1000000, p90_ms = p90_ms[] / 1000000, p95_ms = p95_ms[] / 1000000",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect",
+          "seriesOverrides": [
+            {
+              "seriesId": "avg_ms",
+              "override": {
+                "color": "#2AB6F4"
+              }
+            },
+            {
+              "seriesId": "p90_ms",
+              "override": {
+                "color": "#F8B000"
+              }
+            },
+            {
+              "seriesId": "p95_ms",
+              "override": {
+                "color": "#C62239"
+              }
+            }
+          ]
+        },
+        "autoSelectVisualization": false,
+        "unitsOverrides": [
+          {
+            "identifier": "avg_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "p90_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "p95_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "33": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83d\udc22 Slow Request Investigation \u2014 Requests > 1s and > 3s\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "WarningIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#F8B000",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "34": {
+      "title": "\ud83d\udc22 Slow Requests (>1s) Over Time by Domain",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\" and duration > 1000000000\n| makeTimeseries slow_requests = count(), by:{url.domain}, interval:15m",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "35": {
+      "title": "\ud83d\udea8 Very Slow Requests (>3s) Over Time by Domain",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\" and duration > 3000000000\n| makeTimeseries very_slow = count(), by:{url.domain}, interval:15m",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "36": {
+      "title": "\ud83d\udcca Slow Request Summary by Domain (>1s)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| summarize \n    Total = count(),\n    Slow_1s = countIf(duration > 1000000000),\n    Slow_3s = countIf(duration > 3000000000),\n    Pct_Slow_1s = countIf(duration > 1000000000) * 100.0 / count(),\n    Avg_ms = avg(duration) / 1000000,\n    P95_ms = percentile(duration, 95) / 1000000,\n    by:{url.domain}\n| sort Slow_1s desc\n| limit 15",
+      "visualization": "table",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "table": {
+          "enableLineWrap": true,
+          "hiddenColumns": [],
+          "lineWrapIds": [],
+          "firstVisibleRowIndex": 0,
+          "columnWidths": {}
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "Total",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "Slow_1s",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "Slow_3s",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "Avg_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          },
+          {
+            "identifier": "P95_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "37": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83d\udce1 Third-Party Request Impact \u2014 Noisy Neighbour Detection\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "TechnologyIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#7C38BC",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "38": {
+      "title": "\ud83d\udcc8 Third-Party Request Volume by Domain Over Time (Top 8)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\" and url.provider == \"third_party\"\n| makeTimeseries requests = count(), by:{url.domain}, interval:15m",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "39": {
+      "title": "\u26a1 Third-Party P95 Response Time by Domain Over Time",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\" and url.provider == \"third_party\"\n| makeTimeseries p95_ms = percentile(duration, 95), by:{url.domain}, interval:15m\n| fieldsAdd p95_ms = p95_ms[] / 1000000",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false,
+        "unitsOverrides": [
+          {
+            "identifier": "p95_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "40": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83d\udd04 Request Performance by HTTP Method\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "AggregationIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#134FC9",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "41": {
+      "title": "\ud83d\udcc8 Request Volume by HTTP Method Over Time",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| makeTimeseries requests = count(), by:{http.request.method}, interval:15m",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "42": {
+      "title": "\u26a1 P95 Response Time by HTTP Method Over Time",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| makeTimeseries p95_ms = percentile(duration, 95), by:{http.request.method}, interval:15m\n| fieldsAdd p95_ms = p95_ms[] / 1000000",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false,
+        "unitsOverrides": [
+          {
+            "identifier": "p95_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "43": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"\ud83e\udde9 Request Initiator Type Breakdown (XHR vs Fetch vs Resource)\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "AggregationIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#134FC9",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "44": {
+      "title": "\ud83d\udcc8 Request Volume by Initiator Type Over Time",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| makeTimeseries requests = count(), by:{performance.initiator_type}, interval:15m",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "45": {
+      "title": "\u26a1 P95 Response Time by Initiator Type Over Time",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| makeTimeseries p95_ms = percentile(duration, 95), by:{performance.initiator_type}, interval:15m\n| fieldsAdd p95_ms = p95_ms[] / 1000000",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": false
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false,
+        "unitsOverrides": [
+          {
+            "identifier": "p95_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    }
+  },
+  "layouts": {
+    "0": {
+      "x": 0,
+      "y": 0,
+      "w": 24,
+      "h": 4
+    },
+    "1": {
+      "x": 0,
+      "y": 4,
+      "w": 24,
+      "h": 1
+    },
+    "2": {
+      "x": 0,
+      "y": 5,
+      "w": 6,
+      "h": 3
+    },
+    "3": {
+      "x": 6,
+      "y": 5,
+      "w": 6,
+      "h": 3
+    },
+    "4": {
+      "x": 12,
+      "y": 5,
+      "w": 6,
+      "h": 3
+    },
+    "5": {
+      "x": 18,
+      "y": 5,
+      "w": 6,
+      "h": 3
+    },
+    "6": {
+      "x": 0,
+      "y": 8,
+      "w": 12,
+      "h": 7
+    },
+    "7": {
+      "x": 12,
+      "y": 8,
+      "w": 12,
+      "h": 7
+    },
+    "8": {
+      "x": 0,
+      "y": 15,
+      "w": 24,
+      "h": 1
+    },
+    "9": {
+      "x": 0,
+      "y": 16,
+      "w": 8,
+      "h": 6
+    },
+    "10": {
+      "x": 8,
+      "y": 16,
+      "w": 8,
+      "h": 6
+    },
+    "11": {
+      "x": 16,
+      "y": 16,
+      "w": 8,
+      "h": 6
+    },
+    "12": {
+      "x": 0,
+      "y": 22,
+      "w": 24,
+      "h": 1
+    },
+    "13": {
+      "x": 0,
+      "y": 23,
+      "w": 12,
+      "h": 8
+    },
+    "14": {
+      "x": 12,
+      "y": 23,
+      "w": 12,
+      "h": 8
+    },
+    "15": {
+      "x": 0,
+      "y": 31,
+      "w": 24,
+      "h": 1
+    },
+    "16": {
+      "x": 0,
+      "y": 32,
+      "w": 8,
+      "h": 6
+    },
+    "17": {
+      "x": 8,
+      "y": 32,
+      "w": 8,
+      "h": 6
+    },
+    "18": {
+      "x": 16,
+      "y": 32,
+      "w": 8,
+      "h": 8
+    },
+    "19": {
+      "x": 0,
+      "y": 40,
+      "w": 24,
+      "h": 7
+    },
+    "20": {
+      "x": 0,
+      "y": 47,
+      "w": 24,
+      "h": 1
+    },
+    "21": {
+      "x": 0,
+      "y": 48,
+      "w": 24,
+      "h": 8
+    },
+    "22": {
+      "x": 0,
+      "y": 56,
+      "w": 24,
+      "h": 8
+    },
+    "23": {
+      "x": 0,
+      "y": 64,
+      "w": 24,
+      "h": 8
+    },
+    "24": {
+      "x": 0,
+      "y": 72,
+      "w": 24,
+      "h": 1
+    },
+    "25": {
+      "x": 0,
+      "y": 73,
+      "w": 12,
+      "h": 7
+    },
+    "26": {
+      "x": 12,
+      "y": 73,
+      "w": 12,
+      "h": 7
+    },
+    "27": {
+      "x": 0,
+      "y": 80,
+      "w": 24,
+      "h": 1
+    },
+    "28": {
+      "x": 0,
+      "y": 81,
+      "w": 12,
+      "h": 7
+    },
+    "29": {
+      "x": 12,
+      "y": 81,
+      "w": 12,
+      "h": 7
+    },
+    "30": {
+      "x": 0,
+      "y": 88,
+      "w": 24,
+      "h": 1
+    },
+    "31": {
+      "x": 0,
+      "y": 89,
+      "w": 12,
+      "h": 7
+    },
+    "32": {
+      "x": 12,
+      "y": 89,
+      "w": 12,
+      "h": 7
+    },
+    "33": {
+      "x": 0,
+      "y": 96,
+      "w": 24,
+      "h": 1
+    },
+    "34": {
+      "x": 0,
+      "y": 97,
+      "w": 12,
+      "h": 8
+    },
+    "35": {
+      "x": 12,
+      "y": 97,
+      "w": 12,
+      "h": 8
+    },
+    "36": {
+      "x": 0,
+      "y": 105,
+      "w": 24,
+      "h": 8
+    },
+    "37": {
+      "x": 0,
+      "y": 113,
+      "w": 24,
+      "h": 1
+    },
+    "38": {
+      "x": 0,
+      "y": 114,
+      "w": 24,
+      "h": 8
+    },
+    "39": {
+      "x": 0,
+      "y": 122,
+      "w": 24,
+      "h": 8
+    },
+    "40": {
+      "x": 0,
+      "y": 130,
+      "w": 24,
+      "h": 1
+    },
+    "41": {
+      "x": 0,
+      "y": 131,
+      "w": 12,
+      "h": 7
+    },
+    "42": {
+      "x": 12,
+      "y": 131,
+      "w": 12,
+      "h": 7
+    },
+    "43": {
+      "x": 0,
+      "y": 138,
+      "w": 24,
+      "h": 1
+    },
+    "44": {
+      "x": 0,
+      "y": 139,
+      "w": 12,
+      "h": 7
+    },
+    "45": {
+      "x": 12,
+      "y": 139,
+      "w": 12,
+      "h": 7
+    }
+  }
+}

@@ -1,0 +1,987 @@
+{
+  "version": 20,
+  "variables": [],
+  "tiles": {
+    "0": {
+      "type": "markdown",
+      "content": "# 🛒 End-to-End Ecommerce Journey Funnel\n\n**Application:** [APP_NAME] (`APPLICATION-XXXXXXXXXXXX`) | **Data Source:** Gen 3 RUM (`user.events`) | **Funnel Type:** Session-based\n\nContinuously validates the critical ecommerce booking journey to ensure successful transaction completion and consistent user experience.\n\n| Funnel Step | Page / SPA Signal | Type |\n|-------------|-------------------|------|\n| **Homepage** | `/your-location/` | Page |\n| **Places to Stay** | `/your-location/places-to-stay/*` | Page |\n| **Bookings SPA** | `/your/bookings/` — SPA loads `api/packages/definitions` | SPA |\n| **Select Dates** | SPA calls `api/seasons/getAll` | SPA API |\n| **Choose Hotel** | SPA calls `api/hotel/list` | SPA API |\n| **Select Room** | SPA calls `api/hotel/details` | SPA API |\n| **Add Park Tickets** | SPA calls `api/masterdata/getAttractionsAvailabilityInfo` | SPA API |\n| **Confirmation** | `/your/bookings/thank-you-for-your-booking/` | Page |\n\n> **Note:** Steps 3–7 occur within a single-page React app at `/your/bookings/`. SPA steps are inferred from API calls made by the booking widget."
+    },
+    "1": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Funnel Overview — Page-Level Journey\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "FunnelIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#134FC9",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "2": {
+      "title": "🏠 Homepage Sessions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your-location/\"\n| summarize sessions = countDistinct(dt.rum.session.id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "HOMEPAGE",
+          "recordField": "sessions",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": {
+            "isVisible": false
+          },
+          "trend": {
+            "isVisible": false
+          }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "sessions",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#2AB6F4"},
+                "comparator": ">=",
+                "value": 0
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "sessions",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "3": {
+      "title": "🏨 Places to Stay Sessions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter matchesValue(toString(page.url.path), \"*/places-to-stay*\")\n| summarize sessions = countDistinct(dt.rum.session.id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "PLACES TO STAY",
+          "recordField": "sessions",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": {
+            "isVisible": false
+          },
+          "trend": {
+            "isVisible": false
+          }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "sessions",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#7C38BC"},
+                "comparator": ">=",
+                "value": 0
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "sessions",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "4": {
+      "title": "📅 Bookings SPA Sessions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your/bookings/\"\n| summarize sessions = countDistinct(dt.rum.session.id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "BOOKINGS SPA",
+          "recordField": "sessions",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": {
+            "isVisible": false
+          },
+          "trend": {
+            "isVisible": false
+          }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "sessions",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#FF6900"},
+                "comparator": ">=",
+                "value": 0
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "sessions",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "5": {
+      "title": "✅ Confirmation Sessions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| summarize sessions = countDistinct(dt.rum.session.id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "CONFIRMATION",
+          "recordField": "sessions",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": {
+            "isVisible": false
+          },
+          "trend": {
+            "isVisible": false
+          }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "sessions",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#4FD5B0"},
+                "comparator": ">=",
+                "value": 0
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "sessions",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "6": {
+      "title": "📊 Page-Level Funnel (Session Drop-Off)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your-location/\" or matchesValue(toString(page.url.path), \"*/places-to-stay*\") or page.url.path == \"/your/bookings/\" or page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| fieldsAdd funnel_step = toString(if(page.url.path == \"/your-location/\", \"1. Homepage\",\n  else: if(matchesValue(toString(page.url.path), \"*/places-to-stay*\"), \"2. Places to Stay\",\n  else: if(page.url.path == \"/your/bookings/\", \"3. Bookings SPA\",\n  else: \"4. Confirmation\"))))\n| summarize sessions = toDouble(countDistinct(dt.rum.session.id)), by:{funnel_step}\n| sort funnel_step asc\n| fieldsAdd timeframe = now()",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "timestamp": "timeframe",
+            "categoryAxisValues": ["funnel_step"],
+            "leftAxisValues": ["sessions"]
+          },
+          "categoricalBarChartSettings": {
+            "layout": "horizontal"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["sessions"],
+              "override": {
+                "color": "#2AB6F4"
+              }
+            }
+          ],
+          "legend": {
+            "position": "hidden"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "7": {
+      "title": "📉 Page-Level Conversion & Drop-Off Rates",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| fieldsAdd funnel_step = if(page.url.path == \"/your-location/\", \"1. Homepage\",\n  else: if(matchesValue(toString(page.url.path), \"*/places-to-stay*\"), \"2. Places to Stay\",\n  else: if(page.url.path == \"/your/bookings/\", \"3. Bookings SPA\",\n  else: if(page.url.path == \"/your/bookings/thank-you-for-your-booking/\", \"4. Confirmation\",\n  else: null))))\n| filter isNotNull(funnel_step)\n| summarize sessions = countDistinct(dt.rum.session.id), by:{funnel_step}\n| sort funnel_step asc\n| fieldsAdd step_order = if(funnel_step == \"1. Homepage\", 1, else: if(funnel_step == \"2. Places to Stay\", 2, else: if(funnel_step == \"3. Bookings SPA\", 3, else: 4)))\n| sort step_order asc",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "8": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"SPA Deep-Dive — Bookings Widget Steps (via API Calls)\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "WebApplicationIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#FF6900",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "9": {
+      "title": "🔍 SPA Funnel — Bookings Widget Step Progression",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| filter matchesValue(toString(view.url.path), \"*/bookings/\") and view.url.path != \"/your/bookings/manage-my-bookings/\" and view.url.path != \"/your/bookings/thank-you-for-your-booking/\"\n| filter url.path == \"/api/packages/definitions\" or url.path == \"/api/seasons/getAll\" or url.path == \"/api/hotel/list\" or url.path == \"/api/hotel/details\" or url.path == \"/api/masterdata/getAttractionsAvailabilityInfo\"\n| fieldsAdd spa_step = toString(if(url.path == \"/api/packages/definitions\", \"1. SPA Loaded\",\n  else: if(url.path == \"/api/seasons/getAll\", \"2. Select Dates\",\n  else: if(url.path == \"/api/hotel/list\", \"3. Choose Hotel\",\n  else: if(url.path == \"/api/hotel/details\", \"4. Select Room\",\n  else: \"5. Add Park Tickets\")))))\n| summarize sessions = toDouble(countDistinct(dt.rum.session.id)), by:{spa_step}\n| sort spa_step asc\n| fieldsAdd timeframe = now()",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "timestamp": "timeframe",
+            "categoryAxisValues": ["spa_step"],
+            "leftAxisValues": ["sessions"]
+          },
+          "categoricalBarChartSettings": {
+            "layout": "horizontal"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["sessions"],
+              "override": {
+                "color": "#FF6900"
+              }
+            }
+          ],
+          "legend": {
+            "position": "hidden"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "10": {
+      "title": "📋 SPA Step Detail — Sessions & Drop-Off",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| filter matchesValue(toString(view.url.path), \"*/bookings/\") and view.url.path != \"/your/bookings/manage-my-bookings/\" and view.url.path != \"/your/bookings/thank-you-for-your-booking/\"\n| filter url.path == \"/api/packages/definitions\" or url.path == \"/api/seasons/getAll\" or url.path == \"/api/hotel/list\" or url.path == \"/api/hotel/details\" or url.path == \"/api/masterdata/getAttractionsAvailabilityInfo\"\n| fieldsAdd spa_step = if(url.path == \"/api/packages/definitions\", \"1. SPA Loaded\",\n  else: if(url.path == \"/api/seasons/getAll\", \"2. Select Dates\",\n  else: if(url.path == \"/api/hotel/list\", \"3. Choose Hotel\",\n  else: if(url.path == \"/api/hotel/details\", \"4. Select Room\",\n  else: if(url.path == \"/api/masterdata/getAttractionsAvailabilityInfo\", \"5. Add Park Tickets\", else: null)))))\n| filter isNotNull(spa_step)\n| summarize sessions = countDistinct(dt.rum.session.id), requests = count(), avg_duration_ms = avg(duration) / 1000000, p95_duration_ms = percentile(duration, 95) / 1000000, errors = countIf(toDouble(http.response.status_code) >= 400), by:{spa_step}\n| sort spa_step asc",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "errors",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#4FD5B0"},
+                "comparator": "<=",
+                "value": 10
+              },
+              {
+                "id": 2,
+                "color": {"Default": "#F8B000"},
+                "comparator": "<=",
+                "value": 100
+              },
+              {
+                "id": 3,
+                "color": {"Default": "#C62239"},
+                "comparator": ">",
+                "value": 100
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "11": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Funnel Trends — Daily Progression\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "TrendUpIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#7C38BC",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "12": {
+      "title": "📈 Daily Funnel — Page-Level Steps Over Time",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your-location/\" or matchesValue(toString(page.url.path), \"*/places-to-stay*\") or page.url.path == \"/your/bookings/\" or page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| fieldsAdd funnel_step = toString(if(page.url.path == \"/your-location/\", \"Homepage\",\n  else: if(matchesValue(toString(page.url.path), \"*/places-to-stay*\"), \"Places to Stay\",\n  else: if(page.url.path == \"/your/bookings/\", \"Bookings SPA\",\n  else: \"Confirmation\"))))\n| makeTimeseries sessions = count(), by:{funnel_step}, interval:1d",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["sessions"],
+            "leftAxisDimensions": ["funnel_step"],
+            "timestamp": "timeframe"
+          },
+          "legend": {
+            "position": "bottom"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "13": {
+      "title": "📈 Daily Confirmation Rate (Conversions / Homepage Sessions %)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your-location/\" or page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| fieldsAdd is_homepage = if(page.url.path == \"/your-location/\", 1, else: 0), is_confirmation = if(page.url.path == \"/your/bookings/thank-you-for-your-booking/\", 1, else: 0)\n| makeTimeseries homepage_views = sum(is_homepage), confirmation_views = sum(is_confirmation), interval:1d\n| fieldsAdd conversion_rate = (confirmation_views[] / homepage_views[]) * 100",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["conversion_rate"],
+            "timestamp": "timeframe"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["conversion_rate"],
+              "override": {
+                "color": "#4FD5B0"
+              }
+            }
+          ],
+          "legend": {
+            "position": "bottom"
+          },
+          "leftYAxisSettings": {
+            "label": "Conversion %"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "14": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Drop-Off Analysis — Where Do Users Abandon?\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "WarningTriangleIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#C62239",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "15": {
+      "title": "📱 Funnel by Device Type",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your-location/\" or matchesValue(toString(page.url.path), \"*/places-to-stay*\") or page.url.path == \"/your/bookings/\" or page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| fieldsAdd funnel_step = toString(if(page.url.path == \"/your-location/\", \"1. Homepage\",\n  else: if(matchesValue(toString(page.url.path), \"*/places-to-stay*\"), \"2. Places to Stay\",\n  else: if(page.url.path == \"/your/bookings/\", \"3. Bookings SPA\",\n  else: \"4. Confirmation\"))))\n| summarize sessions = toDouble(countDistinct(dt.rum.session.id)), by:{funnel_step, device.type}\n| sort funnel_step asc\n| fieldsAdd timeframe = now()",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "timestamp": "timeframe",
+            "categoryAxisValues": ["funnel_step"],
+            "leftAxisValues": ["sessions"],
+            "leftAxisDimensions": ["device.type"]
+          },
+          "categoricalBarChartSettings": {
+            "layout": "grouped"
+          },
+          "legend": {
+            "position": "bottom"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "16": {
+      "title": "❌ Errors in Bookings SPA",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"error\"\n| filter matchesValue(toString(view.url.path), \"*/bookings*\")\n| summarize error_count = count(), sessions_affected = countDistinct(dt.rum.session.id), by:{error.name, error.type, error.source}\n| sort error_count desc\n| limit 15",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "error_count",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#4FD5B0"},
+                "comparator": "<=",
+                "value": 50
+              },
+              {
+                "id": 2,
+                "color": {"Default": "#F8B000"},
+                "comparator": "<=",
+                "value": 500
+              },
+              {
+                "id": 3,
+                "color": {"Default": "#C62239"},
+                "comparator": ">",
+                "value": 500
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "17": {
+      "title": "⏱️ Page Load Time per Funnel Step (P75 ms)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"view_summary\"\n| filter isNotNull(web_vitals.largest_contentful_paint)\n| fieldsAdd funnel_step = if(view.url.path == \"/your-location/\", \"1. Homepage\",\n  else: if(matchesValue(toString(view.url.path), \"*/places-to-stay*\"), \"2. Places to Stay\",\n  else: if(view.url.path == \"/your/bookings/\", \"3. Bookings SPA\",\n  else: if(view.url.path == \"/your/bookings/thank-you-for-your-booking/\", \"4. Confirmation\",\n  else: null))))\n| filter isNotNull(funnel_step)\n| summarize P75_LCP_ms = percentile(web_vitals.largest_contentful_paint, 75) / 1000000, P75_FCP_ms = percentile(web_vitals.first_contentful_paint, 75) / 1000000, P75_INP_ms = percentile(web_vitals.interaction_to_next_paint, 75) / 1000000, P75_CLS = percentile(web_vitals.cumulative_layout_shift, 75), Samples = count(), by:{funnel_step}\n| sort funnel_step asc",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "P75_LCP_ms",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#4FD5B0"},
+                "comparator": "<=",
+                "value": 2500
+              },
+              {
+                "id": 2,
+                "color": {"Default": "#F8B000"},
+                "comparator": "<=",
+                "value": 4000
+              },
+              {
+                "id": 3,
+                "color": {"Default": "#C62239"},
+                "comparator": ">",
+                "value": 4000
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "18": {
+      "title": "📈 SPA API Performance Over Time (P75 ms)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"request\"\n| filter matchesValue(toString(view.url.path), \"*/bookings/\") and view.url.path != \"/your/bookings/manage-my-bookings/\" and view.url.path != \"/your/bookings/thank-you-for-your-booking/\"\n| filter url.path == \"/api/packages/definitions\" or url.path == \"/api/seasons/getAll\" or url.path == \"/api/hotel/list\" or url.path == \"/api/hotel/details\" or url.path == \"/api/masterdata/getAttractionsAvailabilityInfo\"\n| fieldsAdd spa_step = if(url.path == \"/api/packages/definitions\", \"SPA Load\",\n  else: if(url.path == \"/api/seasons/getAll\", \"Select Dates\",\n  else: if(url.path == \"/api/hotel/list\", \"Choose Hotel\",\n  else: if(url.path == \"/api/hotel/details\", \"Select Room\",\n  else: \"Add Tickets\"))))\n| makeTimeseries p75_ns = percentile(duration, 75), by:{spa_step}, interval:1d\n| fieldsAdd p75_ms = p75_ns[] / 1000000",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["p75_ms"],
+            "leftAxisDimensions": ["spa_step"],
+            "timestamp": "timeframe"
+          },
+          "legend": {
+            "position": "bottom"
+          },
+          "leftYAxisSettings": {
+            "label": "P75 Latency (ms)"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "19": {
+      "title": "🌍 Funnel Conversion by Country (Top 10)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your-location/\" or page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| fieldsAdd is_homepage = if(page.url.path == \"/your-location/\", dt.rum.session.id, else: null), is_confirmation = if(page.url.path == \"/your/bookings/thank-you-for-your-booking/\", dt.rum.session.id, else: null)\n| summarize homepage_sessions = countDistinct(is_homepage), confirmation_sessions = countDistinct(is_confirmation), by:{geo.country.iso_code}\n| filter homepage_sessions > 50\n| fieldsAdd conversion_pct = round((toDouble(confirmation_sessions) / toDouble(homepage_sessions)) * 100, decimals: 2)\n| sort homepage_sessions desc\n| limit 10",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "conversion_pct",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#4FD5B0"},
+                "comparator": ">=",
+                "value": 3
+              },
+              {
+                "id": 2,
+                "color": {"Default": "#F8B000"},
+                "comparator": ">=",
+                "value": 1
+              },
+              {
+                "id": 3,
+                "color": {"Default": "#C62239"},
+                "comparator": "<",
+                "value": 1
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "20": {
+      "title": "📊 Places to Stay — Page Breakdown",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter matchesValue(toString(page.url.path), \"*/places-to-stay*\")\n| summarize sessions = countDistinct(dt.rum.session.id), page_views = count(), by:{page.detected_name}\n| sort sessions desc\n| limit 15",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "21": {
+      "title": "📊 Daily Confirmations",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| makeTimeseries confirmations = count(), interval:1d",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "timestamp": "timeframe",
+            "leftAxisValues": ["confirmations"]
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["confirmations"],
+              "override": {
+                "color": "#4FD5B0"
+              }
+            }
+          ],
+          "legend": {
+            "position": "hidden"
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    }
+  },
+  "layouts": {
+    "0":  {"x": 0,  "y": 0,  "w": 24, "h": 6},
+    "1":  {"x": 0,  "y": 6,  "w": 24, "h": 1},
+    "2":  {"x": 0,  "y": 7,  "w": 6,  "h": 3},
+    "3":  {"x": 6,  "y": 7,  "w": 6,  "h": 3},
+    "4":  {"x": 12, "y": 7,  "w": 6,  "h": 3},
+    "5":  {"x": 18, "y": 7,  "w": 6,  "h": 3},
+    "6":  {"x": 0,  "y": 10, "w": 14, "h": 6},
+    "7":  {"x": 14, "y": 10, "w": 10, "h": 6},
+    "8":  {"x": 0,  "y": 16, "w": 24, "h": 1},
+    "9":  {"x": 0,  "y": 17, "w": 14, "h": 6},
+    "10": {"x": 14, "y": 17, "w": 10, "h": 6},
+    "11": {"x": 0,  "y": 23, "w": 24, "h": 1},
+    "12": {"x": 0,  "y": 24, "w": 12, "h": 6},
+    "13": {"x": 12, "y": 24, "w": 12, "h": 6},
+    "14": {"x": 0,  "y": 30, "w": 24, "h": 1},
+    "15": {"x": 0,  "y": 31, "w": 12, "h": 6},
+    "16": {"x": 12, "y": 31, "w": 12, "h": 6},
+    "17": {"x": 0,  "y": 37, "w": 12, "h": 5},
+    "18": {"x": 12, "y": 37, "w": 12, "h": 6},
+    "19": {"x": 0,  "y": 49, "w": 12, "h": 6},
+    "20": {"x": 12, "y": 49, "w": 12, "h": 6},
+    "21": {"x": 0,  "y": 43, "w": 12, "h": 6}
+  },
+  "importedWithCode": false,
+  "settings": {
+    "defaultTimeframe": {
+      "value": {
+        "from": "now()-7d",
+        "to": "now()"
+      },
+      "enabled": true
+    }
+  }
+}

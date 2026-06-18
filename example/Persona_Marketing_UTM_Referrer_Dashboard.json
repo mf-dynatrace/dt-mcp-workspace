@@ -1,0 +1,742 @@
+{
+  "version": 20,
+  "variables": [],
+  "tiles": {
+    "0": {
+      "type": "markdown",
+      "content": "# 📣 Marketing — UTM Campaign & Referrer Attribution Dashboard\n\n**Application:** [APP_NAME] (`APPLICATION-XXXXXXXXXXXX`) | **Data Source:** Gen 3 RUM (`user.events`, `user.sessions`)\n\n**Purpose:** Track marketing campaign effectiveness by analysing UTM-tagged traffic, referrer sources, and conversion attribution.\n\n| Metric | How It's Tracked |\n|--------|------------------|\n| **Traffic Sources** | Referrer domain & type from `user.sessions` |\n| **UTM Parameters** | Extracted from `url.full` on navigation events — `utm_source`, `utm_medium`, `utm_campaign` |\n| **Campaign ID** | Extracted from `campaign_id=` or `utm_campaign=` URL parameter |\n| **Conversions** | Sessions reaching `/your/bookings/thank-you-for-your-booking/` |\n| **Attribution** | `lookup` join correlates UTM sessions → booking confirmations |\n\n> **Field Notes:** UTM extraction uses `url.full` from `navigation` events. Referrer uses `referrer.url.domain` from `user.sessions`. If tiles show empty data, verify these fields exist in your environment using an exploratory query. Campaign IDs are extracted from the `campaign_id=` URL parameter — adjust the parameter name if your URLs use a different convention."
+    },
+    "1": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Marketing Entry Points\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "WorldIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#134FC9",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "2": {
+      "title": "🏷️ UTM-Tagged Sessions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"navigation\"\n| fieldsAdd url_str = toString(url.full)\n| filter contains(url_str, \"utm_source\")\n| summarize utm_sessions = countDistinct(dt.rum.session.id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "UTM SESSIONS",
+          "recordField": "utm_sessions",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "utm_sessions",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#7C38BC"}, "comparator": ">=", "value": 0 }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "utm_sessions",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "3": {
+      "title": "📊 Unique Campaigns",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"navigation\"\n| fieldsAdd url_str = toString(url.full)\n| filter contains(url_str, \"utm_campaign\")\n| fieldsAdd utm_campaign = splitString(splitString(url_str, \"utm_campaign=\")[1], \"&\")[0]\n| summarize campaigns = countDistinct(utm_campaign)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "UNIQUE CAMPAIGNS",
+          "recordField": "campaigns",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "campaigns",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#2AB6F4"}, "comparator": ">=", "value": 0 }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "4": {
+      "title": "✅ UTM Conversions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"navigation\"\n| fieldsAdd url_str = toString(url.full)\n| filter contains(url_str, \"utm_source\")\n| fieldsAdd utm_source = splitString(splitString(url_str, \"utm_source=\")[1], \"&\")[0]\n| sort timestamp asc\n| summarize utm_source = takeFirst(utm_source), by:{dt.rum.session.id}\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | fieldsAdd converted = 1\n    | summarize converted = max(converted), by:{dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"conv.\"\n| summarize conversions = countIf(isNotNull(conv.converted))",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "UTM CONVERSIONS",
+          "recordField": "conversions",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "conversions",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": ">=", "value": 0 }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "conversions",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "5": {
+      "title": "📈 UTM Conversion Rate %",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"navigation\"\n| fieldsAdd url_str = toString(url.full)\n| filter contains(url_str, \"utm_source\")\n| fieldsAdd utm_source = splitString(splitString(url_str, \"utm_source=\")[1], \"&\")[0]\n| sort timestamp asc\n| summarize utm_source = takeFirst(utm_source), by:{dt.rum.session.id}\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | fieldsAdd converted = 1\n    | summarize converted = max(converted), by:{dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"conv.\"\n| summarize total = count(), conversions = countIf(isNotNull(conv.converted))\n| fieldsAdd conversion_rate = round(toDouble(conversions) / toDouble(total) * 100, decimals: 2)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "UTM CONVERSION %",
+          "recordField": "conversion_rate",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "conversion_rate",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": ">=", "value": 3 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": ">=", "value": 1 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": "<", "value": 1 }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "6": {
+      "title": "🌐 Top Referrer Domains (External Traffic Sources)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"navigation\"\n| filter isNotNull(page.source.url.domain) and page.source.url.domain != \"\"\n| filter page.source.url.domain != url.domain\n| filter page.source.url.domain != \"www.example.com\" and page.source.url.domain != \"example.com\" and page.source.url.domain != \"tickets.example.com\"\n| summarize sessions = countDistinct(dt.rum.session.id), by:{page.source.url.domain}\n| sort sessions desc\n| limit 15\n| fieldsAdd timeframe = now()",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "timestamp": "timeframe",
+            "categoryAxisValues": ["page.source.url.domain"],
+            "leftAxisValues": ["sessions"]
+          },
+          "categoricalBarChartSettings": {
+            "layout": "horizontal"
+          },
+          "seriesOverrides": [
+            { "seriesId": ["sessions"], "override": { "color": "#7C38BC" } }
+          ],
+          "legend": { "position": "hidden" }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "7": {
+      "title": "📈 Daily UTM-Tagged Sessions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"navigation\"\n| fieldsAdd url_str = toString(url.full)\n| fieldsAdd has_utm = if(contains(url_str, \"utm_source\"), 1.0, else: 0.0), no_utm = if(not contains(url_str, \"utm_source\"), 1.0, else: 0.0)\n| makeTimeseries utm_sessions = sum(has_utm), organic_sessions = sum(no_utm), interval:1d",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "timestamp": "timeframe",
+            "leftAxisValues": ["utm_sessions", "organic_sessions"]
+          },
+          "categoricalBarChartSettings": {
+            "layout": "stacked"
+          },
+          "seriesOverrides": [
+            { "seriesId": ["utm_sessions"], "override": { "color": "#7C38BC" } },
+            { "seriesId": ["organic_sessions"], "override": { "color": "#2AB6F4" } }
+          ],
+          "legend": { "position": "bottom" },
+          "leftYAxisSettings": { "label": "Navigation Events" }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "8": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"UTM Source & Campaign Breakdown\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "FunnelIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#FF6900",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "9": {
+      "title": "📊 Sessions by UTM Source",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"navigation\"\n| fieldsAdd url_str = toString(url.full)\n| filter contains(url_str, \"utm_source\")\n| fieldsAdd utm_source = splitString(splitString(url_str, \"utm_source=\")[1], \"&\")[0]\n| summarize sessions = countDistinct(dt.rum.session.id), by:{utm_source}\n| sort sessions desc\n| limit 15\n| fieldsAdd timeframe = now()",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "timestamp": "timeframe",
+            "categoryAxisValues": ["utm_source"],
+            "leftAxisValues": ["sessions"]
+          },
+          "categoricalBarChartSettings": {
+            "layout": "horizontal"
+          },
+          "seriesOverrides": [
+            { "seriesId": ["sessions"], "override": { "color": "#FF6900" } }
+          ],
+          "legend": { "position": "hidden" }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "10": {
+      "title": "📊 Sessions by UTM Medium",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"navigation\"\n| fieldsAdd url_str = toString(url.full)\n| filter contains(url_str, \"utm_medium\")\n| fieldsAdd utm_medium = splitString(splitString(url_str, \"utm_medium=\")[1], \"&\")[0]\n| summarize sessions = countDistinct(dt.rum.session.id), by:{utm_medium}\n| sort sessions desc",
+      "visualization": "pieChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["sessions"],
+            "leftAxisDimensions": ["utm_medium"]
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "11": {
+      "title": "📋 Full UTM Campaign Breakdown (Source × Medium × Campaign × Campaign ID)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"navigation\"\n| fieldsAdd url_str = toString(url.full)\n| filter contains(url_str, \"utm_source\")\n| fieldsAdd utm_source = splitString(splitString(url_str, \"utm_source=\")[1], \"&\")[0]\n| fieldsAdd utm_medium = if(contains(url_str, \"utm_medium\"), splitString(splitString(url_str, \"utm_medium=\")[1], \"&\")[0], else: \"(not set)\")\n| fieldsAdd utm_campaign = if(contains(url_str, \"utm_campaign\"), splitString(splitString(url_str, \"utm_campaign=\")[1], \"&\")[0], else: \"(not set)\")\n| fieldsAdd campaign_id = if(contains(url_str, \"campaign_id\"), splitString(splitString(url_str, \"campaign_id=\")[1], \"&\")[0], else: if(contains(url_str, \"campaignid\"), splitString(splitString(url_str, \"campaignid=\")[1], \"&\")[0], else: \"(not set)\"))\n| sort timestamp asc\n| summarize sessions = countDistinct(dt.rum.session.id), navigations = count(), by:{utm_source, utm_medium, utm_campaign, campaign_id}\n| sort sessions desc\n| limit 30",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "sessions",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": ">=", "value": 100 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": ">=", "value": 10 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": "<", "value": 10 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "12": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Marketing-to-Conversion Attribution\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "TrendUpIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#4FD5B0",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "13": {
+      "title": "💰 Conversion Rate by UTM Source",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"navigation\"\n| fieldsAdd url_str = toString(url.full)\n| filter contains(url_str, \"utm_source\")\n| fieldsAdd utm_source = splitString(splitString(url_str, \"utm_source=\")[1], \"&\")[0]\n| sort timestamp asc\n| summarize utm_source = takeFirst(utm_source), by:{dt.rum.session.id}\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | fieldsAdd converted = 1\n    | summarize converted = max(converted), by:{dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"conv.\"\n| summarize total_sessions = count(), conversions = countIf(isNotNull(conv.converted)), by:{utm_source}\n| fieldsAdd conversion_rate_pct = round(toDouble(conversions) / toDouble(total_sessions) * 100, decimals: 2)\n| sort total_sessions desc\n| limit 15",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "conversion_rate_pct",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": ">=", "value": 3 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": ">=", "value": 1 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": "<", "value": 1 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "14": {
+      "title": "💰 Conversion Rate by Campaign",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"navigation\"\n| fieldsAdd url_str = toString(url.full)\n| filter contains(url_str, \"utm_campaign\")\n| fieldsAdd utm_campaign = splitString(splitString(url_str, \"utm_campaign=\")[1], \"&\")[0]\n| fieldsAdd campaign_id = if(contains(url_str, \"campaign_id\"), splitString(splitString(url_str, \"campaign_id=\")[1], \"&\")[0], else: if(contains(url_str, \"campaignid\"), splitString(splitString(url_str, \"campaignid=\")[1], \"&\")[0], else: \"(not set)\"))\n| sort timestamp asc\n| summarize utm_campaign = takeFirst(utm_campaign), campaign_id = takeFirst(campaign_id), by:{dt.rum.session.id}\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | fieldsAdd converted = 1\n    | summarize converted = max(converted), by:{dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"conv.\"\n| summarize total_sessions = count(), conversions = countIf(isNotNull(conv.converted)), by:{utm_campaign, campaign_id}\n| fieldsAdd conversion_rate_pct = round(toDouble(conversions) / toDouble(total_sessions) * 100, decimals: 2)\n| sort total_sessions desc\n| limit 20",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "conversion_rate_pct",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": ">=", "value": 3 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": ">=", "value": 1 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": "<", "value": 1 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "15": {
+      "title": "📈 Daily UTM Conversions by Source",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"navigation\"\n    | fieldsAdd url_str = toString(url.full)\n    | filter contains(url_str, \"utm_source\")\n    | fieldsAdd utm_source = splitString(splitString(url_str, \"utm_source=\")[1], \"&\")[0]\n    | summarize utm_source = takeFirst(utm_source), by:{dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"utm.\"\n| fieldsAdd source = coalesce(utm.utm_source, \"(direct / organic)\")\n| makeTimeseries conversions = count(), by:{source}, interval:1d",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["conversions"],
+            "leftAxisDimensions": ["source"],
+            "timestamp": "timeframe"
+          },
+          "legend": { "position": "bottom" },
+          "leftYAxisSettings": { "label": "Conversions" }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "16": {
+      "title": "🌍 Conversion Rate by Referrer Domain",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your-location/\" or page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| fieldsAdd is_homepage = if(page.url.path == \"/your-location/\", dt.rum.session.id, else: null)\n| fieldsAdd is_confirmation = if(page.url.path == \"/your/bookings/thank-you-for-your-booking/\", dt.rum.session.id, else: null)\n| summarize homepage_sessions = countDistinct(is_homepage), confirmation_sessions = countDistinct(is_confirmation), by:{page.url.domain}\n| filter homepage_sessions > 10\n| fieldsAdd conversion_pct = round(toDouble(confirmation_sessions) / toDouble(homepage_sessions) * 100, decimals: 2)\n| sort homepage_sessions desc\n| limit 10",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "conversion_pct",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": ">=", "value": 3 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": ">=", "value": 1 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": "<", "value": 1 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "17": {
+      "title": "🚪 Top Landing Pages from UTM Traffic",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"navigation\"\n| fieldsAdd url_str = toString(url.full)\n| filter contains(url_str, \"utm_source\")\n| fieldsAdd utm_source = splitString(splitString(url_str, \"utm_source=\")[1], \"&\")[0]\n| fieldsAdd landing_path = toString(url.path)\n| summarize sessions = countDistinct(dt.rum.session.id), top_source = takeFirst(utm_source), by:{landing_path}\n| sort sessions desc\n| limit 15",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "sessions",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": ">=", "value": 100 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": ">=", "value": 10 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": "<", "value": 10 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "18": {
+      "title": "📊 UTM Source × Medium — Sessions & Conversions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"navigation\"\n| fieldsAdd url_str = toString(url.full)\n| filter contains(url_str, \"utm_source\")\n| fieldsAdd utm_source = splitString(splitString(url_str, \"utm_source=\")[1], \"&\")[0]\n| fieldsAdd utm_medium = if(contains(url_str, \"utm_medium\"), splitString(splitString(url_str, \"utm_medium=\")[1], \"&\")[0], else: \"(not set)\")\n| sort timestamp asc\n| summarize utm_source = takeFirst(utm_source), utm_medium = takeFirst(utm_medium), by:{dt.rum.session.id}\n| lookup [\n    fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n    | filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n    | filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n    | fieldsAdd converted = 1\n    | summarize converted = max(converted), by:{dt.rum.session.id}\n  ], sourceField:dt.rum.session.id, lookupField:dt.rum.session.id, prefix:\"conv.\"\n| summarize sessions = count(), conversions = countIf(isNotNull(conv.converted)), by:{utm_source, utm_medium}\n| fieldsAdd conversion_rate_pct = round(toDouble(conversions) / toDouble(sessions) * 100, decimals: 2)\n| sort sessions desc\n| limit 20",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "conversion_rate_pct",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": {"Default": "#4FD5B0"}, "comparator": ">=", "value": 3 },
+              { "id": 2, "color": {"Default": "#F8B000"}, "comparator": ">=", "value": 1 },
+              { "id": 3, "color": {"Default": "#C62239"}, "comparator": "<", "value": 1 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    }
+  },
+  "layouts": {
+    "0":  {"x": 0,  "y": 0,  "w": 24, "h": 6},
+    "1":  {"x": 0,  "y": 6,  "w": 24, "h": 1},
+    "2":  {"x": 0,  "y": 7,  "w": 6,  "h": 3},
+    "3":  {"x": 6,  "y": 7,  "w": 6,  "h": 3},
+    "4":  {"x": 12, "y": 7,  "w": 6,  "h": 3},
+    "5":  {"x": 18, "y": 7,  "w": 6,  "h": 3},
+    "6":  {"x": 0,  "y": 10, "w": 12, "h": 7},
+    "7":  {"x": 12, "y": 10, "w": 12, "h": 7},
+    "8":  {"x": 0,  "y": 17, "w": 24, "h": 1},
+    "9":  {"x": 0,  "y": 18, "w": 12, "h": 6},
+    "10": {"x": 12, "y": 18, "w": 12, "h": 6},
+    "11": {"x": 0,  "y": 24, "w": 24, "h": 8},
+    "12": {"x": 0,  "y": 32, "w": 24, "h": 1},
+    "13": {"x": 0,  "y": 33, "w": 12, "h": 7},
+    "14": {"x": 12, "y": 33, "w": 12, "h": 7},
+    "15": {"x": 0,  "y": 40, "w": 24, "h": 6},
+    "16": {"x": 0,  "y": 46, "w": 12, "h": 7},
+    "17": {"x": 12, "y": 46, "w": 12, "h": 7},
+    "18": {"x": 0,  "y": 53, "w": 24, "h": 7}
+  },
+  "importedWithCode": false,
+  "settings": {
+    "defaultTimeframe": {
+      "value": {
+        "from": "now()-7d",
+        "to": "now()"
+      },
+      "enabled": true
+    }
+  }
+}

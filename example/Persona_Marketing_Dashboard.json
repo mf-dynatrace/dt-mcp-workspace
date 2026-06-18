@@ -1,0 +1,916 @@
+{
+  "version": 20,
+  "variables": [],
+  "tiles": {
+    "0": {
+      "type": "markdown",
+      "content": "# 📣 Marketing — Digital Engagement & Conversion Dashboard\n\n**Application:** [APP_NAME] (`APPLICATION-XXXXXXXXXXXX`) | **Data Source:** Gen 3 RUM (`user.events`, `user.sessions`)\n\n**[CLIENT_NAME] — Company — Company Objectives Tracked:**\n\n| Objective | KPIs on this Dashboard |\n|-----------|------------------------|\n| **Drive Online Revenue** | Booking conversion rate, daily confirmations, funnel drop-off |\n| **Grow Membership Membership** | Memberships page sessions, engagement |\n| **Increase Visitor Engagement** | Total sessions, pages per session, session duration |\n| **Optimise Multi-Channel Experience** | Device breakdown, geographic reach, browser distribution |\n| **Reduce Booking Abandonment** | Funnel step-by-step drop-off %, device-specific conversion |\n\n> **Usage:** Use this dashboard to monitor campaign effectiveness, identify where visitors drop off in the booking journey, and understand audience composition. Timeframe defaults to 7 days — adjust for campaign analysis periods."
+    },
+    "1": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Audience Overview\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "UserGroupIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#134FC9",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "2": {
+      "title": "👥 Total Sessions",
+      "type": "data",
+      "query": "fetch user.sessions, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter in(dt.rum.application.entities, \"APPLICATION-XXXXXXXXXXXX\")\n| summarize sessions = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "SESSIONS",
+          "recordField": "sessions",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "sessions",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#2AB6F4"},
+                "comparator": ">=",
+                "value": 0
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "sessions",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "3": {
+      "title": "⏱️ Avg Session Duration (sec)",
+      "type": "data",
+      "query": "fetch user.sessions, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter in(dt.rum.application.entities, \"APPLICATION-XXXXXXXXXXXX\")\n| summarize avg_duration_sec = avg(duration) / 1000000000",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "AVG DURATION (s)",
+          "recordField": "avg_duration_sec",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "avg_duration_sec",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#4FD5B0"},
+                "comparator": ">=",
+                "value": 60
+              },
+              {
+                "id": 2,
+                "color": {"Default": "#F8B000"},
+                "comparator": ">=",
+                "value": 20
+              },
+              {
+                "id": 3,
+                "color": {"Default": "#C62239"},
+                "comparator": "<",
+                "value": 20
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "4": {
+      "title": "📄 Avg Pages per Session",
+      "type": "data",
+      "query": "fetch user.sessions, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter in(dt.rum.application.entities, \"APPLICATION-XXXXXXXXXXXX\")\n| summarize avg_pages = avg(navigation_count)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "AVG PAGES / SESSION",
+          "recordField": "avg_pages",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "avg_pages",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#4FD5B0"},
+                "comparator": ">=",
+                "value": 3
+              },
+              {
+                "id": 2,
+                "color": {"Default": "#F8B000"},
+                "comparator": ">=",
+                "value": 1.5
+              },
+              {
+                "id": 3,
+                "color": {"Default": "#C62239"},
+                "comparator": "<",
+                "value": 1.5
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "5": {
+      "title": "✅ Booking Confirmations",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| summarize confirmations = countDistinct(dt.rum.session.id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "BOOKINGS COMPLETED",
+          "recordField": "confirmations",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "confirmations",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#4FD5B0"},
+                "comparator": ">=",
+                "value": 0
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "confirmations",
+            "unitCategory": "unspecified",
+            "baseUnit": "count",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": true,
+            "added": 1741607700000
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "6": {
+      "title": "📈 Daily Sessions Trend",
+      "type": "data",
+      "query": "fetch user.sessions, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter in(dt.rum.application.entities, \"APPLICATION-XXXXXXXXXXXX\")\n| makeTimeseries sessions = count(), interval:1d",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["sessions"],
+            "timestamp": "timeframe"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["sessions"],
+              "override": {
+                "color": "#2AB6F4"
+              }
+            }
+          ],
+          "legend": { "position": "hidden" },
+          "leftYAxisSettings": { "label": "Sessions" }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "7": {
+      "title": "📊 Daily Booking Confirmations",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| makeTimeseries confirmations = count(), interval:1d",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "timestamp": "timeframe",
+            "leftAxisValues": ["confirmations"]
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["confirmations"],
+              "override": {
+                "color": "#4FD5B0"
+              }
+            }
+          ],
+          "legend": { "position": "hidden" },
+          "leftYAxisSettings": { "label": "Confirmations" }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "8": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Booking Funnel & Conversion\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "FunnelIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#FF6900",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "9": {
+      "title": "🔻 Booking Funnel (Session Drop-Off)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your-location/\" or page.url.path == \"/your-location/products/store/\" or page.url.path == \"/your/bookings/\" or page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| fieldsAdd funnel_step = toString(if(page.url.path == \"/your-location/\", \"1. Homepage\",\n  else: if(page.url.path == \"/your-location/products/store/\", \"2. Tickets Page\",\n  else: if(page.url.path == \"/your/bookings/\", \"3. Bookings\",\n  else: \"4. Confirmation\"))))\n| summarize sessions = toDouble(countDistinct(dt.rum.session.id)), by:{funnel_step}\n| sort funnel_step asc\n| fieldsAdd timeframe = now()",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "timestamp": "timeframe",
+            "categoryAxisValues": ["funnel_step"],
+            "leftAxisValues": ["sessions"]
+          },
+          "categoricalBarChartSettings": {
+            "layout": "horizontal"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["sessions"],
+              "override": {
+                "color": "#FF6900"
+              }
+            }
+          ],
+          "legend": { "position": "hidden" }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "10": {
+      "title": "📈 Daily Conversion Rate (Confirmations / Homepage %)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your-location/\" or page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| fieldsAdd is_homepage = if(page.url.path == \"/your-location/\", 1, else: 0), is_confirmation = if(page.url.path == \"/your/bookings/thank-you-for-your-booking/\", 1, else: 0)\n| makeTimeseries homepage_views = sum(is_homepage), confirmation_views = sum(is_confirmation), interval:1d\n| fieldsAdd conversion_rate = (confirmation_views[] / homepage_views[]) * 100",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["conversion_rate"],
+            "timestamp": "timeframe"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["conversion_rate"],
+              "override": {
+                "color": "#4FD5B0"
+              }
+            }
+          ],
+          "legend": { "position": "hidden" },
+          "leftYAxisSettings": { "label": "Conversion %" }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "11": {
+      "title": "📱 Funnel by Device Type",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your-location/\" or page.url.path == \"/your-location/products/store/\" or page.url.path == \"/your/bookings/\" or page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| fieldsAdd funnel_step = toString(if(page.url.path == \"/your-location/\", \"1. Homepage\",\n  else: if(page.url.path == \"/your-location/products/store/\", \"2. Tickets\",\n  else: if(page.url.path == \"/your/bookings/\", \"3. Bookings\",\n  else: \"4. Confirmation\"))))\n| summarize sessions = toDouble(countDistinct(dt.rum.session.id)), by:{funnel_step, device.type}\n| sort funnel_step asc\n| fieldsAdd timeframe = now()",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "timestamp": "timeframe",
+            "categoryAxisValues": ["funnel_step"],
+            "leftAxisValues": ["sessions"],
+            "leftAxisDimensions": ["device.type"]
+          },
+          "categoricalBarChartSettings": {
+            "layout": "grouped"
+          },
+          "legend": { "position": "bottom" }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "12": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Audience Segmentation\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "WorldIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#7C38BC",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "13": {
+      "title": "🌍 Sessions by Country (Top 10)",
+      "type": "data",
+      "query": "fetch user.sessions, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter in(dt.rum.application.entities, \"APPLICATION-XXXXXXXXXXXX\")\n| summarize sessions = count(), by:{geo.country.iso_code}\n| sort sessions desc\n| limit 10\n| fieldsAdd timeframe = now()",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "timestamp": "timeframe",
+            "categoryAxisValues": ["geo.country.iso_code"],
+            "leftAxisValues": ["sessions"]
+          },
+          "categoricalBarChartSettings": {
+            "layout": "horizontal"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["sessions"],
+              "override": {
+                "color": "#7C38BC"
+              }
+            }
+          ],
+          "legend": { "position": "hidden" }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "14": {
+      "title": "📱 Sessions by Device Type",
+      "type": "data",
+      "query": "fetch user.sessions, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter in(dt.rum.application.entities, \"APPLICATION-XXXXXXXXXXXX\")\n| summarize sessions = count(), by:{device.type}\n| sort sessions desc\n| fieldsAdd timeframe = now()",
+      "visualization": "pieChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["sessions"],
+            "leftAxisDimensions": ["device.type"]
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "15": {
+      "title": "🌐 Sessions by Browser",
+      "type": "data",
+      "query": "fetch user.sessions, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter in(dt.rum.application.entities, \"APPLICATION-XXXXXXXXXXXX\")\n| summarize sessions = count(), by:{browser.name}\n| sort sessions desc\n| limit 8\n| fieldsAdd timeframe = now()",
+      "visualization": "pieChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["sessions"],
+            "leftAxisDimensions": ["browser.name"]
+          }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "16": {
+      "title": "🌍 Conversion Rate by Country (Top 10)",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your-location/\" or page.url.path == \"/your/bookings/thank-you-for-your-booking/\"\n| fieldsAdd is_homepage = if(page.url.path == \"/your-location/\", dt.rum.session.id, else: null), is_confirmation = if(page.url.path == \"/your/bookings/thank-you-for-your-booking/\", dt.rum.session.id, else: null)\n| summarize homepage_sessions = countDistinct(is_homepage), confirmation_sessions = countDistinct(is_confirmation), by:{geo.country.iso_code}\n| filter homepage_sessions > 50\n| fieldsAdd conversion_pct = round((toDouble(confirmation_sessions) / toDouble(homepage_sessions)) * 100, decimals: 2)\n| sort homepage_sessions desc\n| limit 10",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "conversion_pct",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": {"Default": "#4FD5B0"},
+                "comparator": ">=",
+                "value": 3
+              },
+              {
+                "id": 2,
+                "color": {"Default": "#F8B000"},
+                "comparator": ">=",
+                "value": 1
+              },
+              {
+                "id": 3,
+                "color": {"Default": "#C62239"},
+                "comparator": "<",
+                "value": 1
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "17": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Top Content & Membershipes\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "DocumentsIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#2AB6F4",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "18": {
+      "title": "📊 Top 15 Pages by Sessions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| summarize sessions = countDistinct(dt.rum.session.id), page_views = count(), by:{page.detected_name}\n| sort sessions desc\n| limit 15",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "19": {
+      "title": "🎫 Membershipes Page — Daily Sessions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter matchesValue(toString(page.url.path), \"*/products*\")\n| makeTimeseries sessions = countDistinct(dt.rum.session.id), interval:1d",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["sessions"],
+            "timestamp": "timeframe"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["sessions"],
+              "override": {
+                "color": "#FF6900"
+              }
+            }
+          ],
+          "legend": { "position": "hidden" },
+          "leftYAxisSettings": { "label": "Sessions" }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "20": {
+      "title": "🎟️ Tickets Page — Daily Sessions",
+      "type": "data",
+      "query": "fetch user.events, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter dt.rum.application.entity == \"APPLICATION-XXXXXXXXXXXX\" and characteristics.classifier == \"page_summary\"\n| filter page.url.path == \"/your-location/products/store/\"\n| makeTimeseries sessions = countDistinct(dt.rum.session.id), interval:1d",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": ["sessions"],
+            "timestamp": "timeframe"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": ["sessions"],
+              "override": {
+                "color": "#7C38BC"
+              }
+            }
+          ],
+          "legend": { "position": "hidden" },
+          "leftYAxisSettings": { "label": "Sessions" }
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "21": {
+      "title": "📱 Sessions by Operating System",
+      "type": "data",
+      "query": "fetch user.sessions, from:$dt_timeframe_from, to:$dt_timeframe_to\n| filter in(dt.rum.application.entities, \"APPLICATION-XXXXXXXXXXXX\")\n| summarize sessions = count(), by:{os.name}\n| sort sessions desc\n| limit 8",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    }
+  },
+  "layouts": {
+    "0":  {"x": 0,  "y": 0,  "w": 24, "h": 6},
+    "1":  {"x": 0,  "y": 6,  "w": 24, "h": 1},
+    "2":  {"x": 0,  "y": 7,  "w": 6,  "h": 3},
+    "3":  {"x": 6,  "y": 7,  "w": 6,  "h": 3},
+    "4":  {"x": 12, "y": 7,  "w": 6,  "h": 3},
+    "5":  {"x": 18, "y": 7,  "w": 6,  "h": 3},
+    "6":  {"x": 0,  "y": 10, "w": 12, "h": 6},
+    "7":  {"x": 12, "y": 10, "w": 12, "h": 6},
+    "8":  {"x": 0,  "y": 16, "w": 24, "h": 1},
+    "9":  {"x": 0,  "y": 17, "w": 12, "h": 6},
+    "10": {"x": 12, "y": 17, "w": 12, "h": 6},
+    "11": {"x": 0,  "y": 23, "w": 24, "h": 6},
+    "12": {"x": 0,  "y": 29, "w": 24, "h": 1},
+    "13": {"x": 0,  "y": 30, "w": 12, "h": 6},
+    "14": {"x": 12, "y": 30, "w": 6,  "h": 6},
+    "15": {"x": 18, "y": 30, "w": 6,  "h": 6},
+    "16": {"x": 0,  "y": 36, "w": 12, "h": 6},
+    "17": {"x": 0,  "y": 42, "w": 24, "h": 1},
+    "18": {"x": 0,  "y": 43, "w": 12, "h": 7},
+    "19": {"x": 12, "y": 43, "w": 12, "h": 6},
+    "20": {"x": 12, "y": 49, "w": 12, "h": 6},
+    "21": {"x": 12, "y": 36, "w": 12, "h": 6}
+  },
+  "importedWithCode": false,
+  "settings": {
+    "defaultTimeframe": {
+      "value": {
+        "from": "now()-7d",
+        "to": "now()"
+      },
+      "enabled": true
+    }
+  }
+}

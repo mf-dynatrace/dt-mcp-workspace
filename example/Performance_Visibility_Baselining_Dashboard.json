@@ -1,0 +1,1363 @@
+{
+  "version": 20,
+  "variables": [
+    {
+      "key": "app",
+      "type": "query",
+      "label": "Application",
+      "defaultValue": "[APP_NAME]",
+      "input": "smartscapeNodes \"FRONTEND\" | fields name | sort name asc",
+      "multiple": false,
+      "includeAll": false
+    }
+  ],
+  "tiles": {
+    "0": {
+      "type": "markdown",
+      "content": "# 📊 Performance Visibility & Baselining Dashboard\n\n**Application:** Selected via dashboard variable | **SLO Standard:** Google Core Web Vitals P75 | **Data Source:** Gen 3 RUM (`user.events`, `user.sessions`)\n\nThis dashboard **replaces manual Lighthouse/PageSpeed reports and cron-based daily/weekly reporting** with **continuous real-user monitoring** from Dynatrace RUM. Instead of synthetic single-point-in-time scores, you get **P75 baselines from thousands of real guest sessions** — with automatic regression detection, historical trending, and correlation to backend services.\n\n| What You Had (Lighthouse/Cron) | What This Dashboard Provides (Enhancement) |\n|-------------------------------|--------------------------------------------|\n| Daily Lighthouse score (1 synthetic run) | Continuous real-user P75 from thousands of sessions |\n| Weekly cron report (point-in-time) | 30-day rolling trend with SLO thresholds |\n| Single performance number | Full percentile distribution (P10–P95) per page |\n| No segmentation | Breakdown by device, browser, OS, country |\n| No error correlation | Error rates baselined alongside performance |\n| No backend context | Frontend ↔ backend latency correlation |\n| Manual dashboard build | Auto-updating, shareable, alertable |\n\n| Metric | What Guests Experience | 🟢 Good | 🟡 Needs Work | 🔴 Poor | SLO Target |\n|--------|----------------------|---------|---------------|---------|------------|\n| **LCP** — Largest Contentful Paint | How fast the main content loads | ≤ 2.5s | ≤ 4.0s | > 4.0s | P75 ≤ 2.5s |\n| **CLS** — Cumulative Layout Shift | How much the page layout shifts | ≤ 0.10 | ≤ 0.25 | > 0.25 | P75 ≤ 0.10 |\n| **INP** — Interaction to Next Paint | How fast the page responds to taps/clicks | ≤ 200ms | ≤ 500ms | > 500ms | P75 ≤ 200ms |\n| **FCP** — First Contentful Paint | How fast something first appears on screen | ≤ 1.8s | ≤ 3.0s | > 3.0s | P75 ≤ 1.8s |\n| **TTFB** — Time to First Byte | How fast the server responds | ≤ 800ms | ≤ 1.8s | > 1.8s | P75 ≤ 800ms |"
+    },
+    "1": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Current Performance Scorecard — Real User P75 Baselines\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "PulseIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 1,
+                "color": "#134FC9",
+                "comparator": "!=",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 100,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "2": {
+      "title": "⏱️ LCP — P75",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.largest_contentful_paint)\n| summarize LCP_P75 = toDouble(percentile(web_vitals.largest_contentful_paint, 75) / 1000000)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "SLO: P75 ≤ 2,500ms",
+          "recordField": "LCP_P75",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "LCP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 2500 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 4000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 4000 }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          { "identifier": "LCP_P75", "unitCategory": "unspecified", "baseUnit": "none", "displayUnit": null, "decimals": 0, "suffix": " ms", "delimiter": true, "added": 1766081789473 }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "3": {
+      "title": "📐 CLS — P75",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.cumulative_layout_shift)\n| summarize CLS_P75 = toDouble(percentile(web_vitals.cumulative_layout_shift, 75))",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "SLO: P75 ≤ 0.1",
+          "recordField": "CLS_P75",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "CLS_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 0.1 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 0.25 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 0.25 }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          { "identifier": "CLS_P75", "unitCategory": "unspecified", "baseUnit": "none", "displayUnit": null, "decimals": 3, "suffix": "", "delimiter": true, "added": 1766081789473 }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "4": {
+      "title": "👆 INP — P75",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.interaction_to_next_paint)\n| summarize INP_P75 = toDouble(percentile(web_vitals.interaction_to_next_paint, 75) / 1000000)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "SLO: P75 ≤ 200ms",
+          "recordField": "INP_P75",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "INP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 200 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 500 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 500 }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          { "identifier": "INP_P75", "unitCategory": "unspecified", "baseUnit": "none", "displayUnit": null, "decimals": 0, "suffix": " ms", "delimiter": true, "added": 1766081789473 }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "5": {
+      "title": "🎨 FCP — P75",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.first_contentful_paint)\n| summarize FCP_P75 = toDouble(percentile(web_vitals.first_contentful_paint, 75) / 1000000)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "SLO: P75 ≤ 1,800ms",
+          "recordField": "FCP_P75",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "FCP_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 1800 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 3000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 3000 }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          { "identifier": "FCP_P75", "unitCategory": "unspecified", "baseUnit": "none", "displayUnit": null, "decimals": 0, "suffix": " ms", "delimiter": true, "added": 1766081789473 }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "6": {
+      "title": "🖥️ TTFB — P75",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.time_to_first_byte)\n| summarize TTFB_P75 = toDouble(percentile(web_vitals.time_to_first_byte, 75) / 1000000)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "SLO: P75 ≤ 800ms",
+          "recordField": "TTFB_P75",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "TTFB_P75",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 800 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 1800 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 1800 }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          { "identifier": "TTFB_P75", "unitCategory": "unspecified", "baseUnit": "none", "displayUnit": null, "decimals": 0, "suffix": " ms", "delimiter": true, "added": 1766081789473 }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "7": {
+      "title": "✅ CWV SLO Pass Rate",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize \n    lcp_p75 = percentile(web_vitals.largest_contentful_paint, 75) / 1000000,\n    cls_p75 = percentile(web_vitals.cumulative_layout_shift, 75),\n    inp_p75 = percentile(web_vitals.interaction_to_next_paint, 75) / 1000000,\n    samples = count(),\n    by:{view.detected_name}\n| filter samples >= 30\n| summarize\n    total_pages = count(),\n    passing_pages = countIf(toDouble(lcp_p75) <= 2500.0 and toDouble(cls_p75) <= 0.1 and toDouble(inp_p75) <= 200.0)\n| fieldsAdd compliance_pct = toDouble(passing_pages) / toDouble(total_pages) * 100",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "PAGES PASSING ALL 3 CWV",
+          "recordField": "compliance_pct",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "compliance_pct",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≥", "value": 80 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≥", "value": 50 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": "<", "value": 50 }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          { "identifier": "compliance_pct", "unitCategory": "percentage", "baseUnit": "percent", "displayUnit": null, "decimals": 0, "suffix": "%", "delimiter": true, "added": 1766081789473 }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "8": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Traffic & Session Overview (from user.sessions — very low cost)\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "UsersIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": "#2AB6F4", "comparator": "!=", "value": "0" }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "9": {
+      "title": "👥 Total Sessions (24h)",
+      "type": "data",
+      "query": "fetch user.sessions, from:now()-24h\n| filter frontend.name == $app\n| summarize sessions = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "GUEST SESSIONS",
+          "recordField": "sessions",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "sessions",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#134FC9" }, "comparator": "≥", "value": 0 }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          { "identifier": "sessions", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1766081789473 }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "10": {
+      "title": "📄 Avg Page Views / Session",
+      "type": "data",
+      "query": "fetch user.sessions, from:now()-24h\n| filter frontend.name == $app\n| summarize avg_pageviews = round(avg(navigation_count), decimals:1)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "PAGES PER SESSION",
+          "recordField": "avg_pageviews",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "avg_pageviews",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#134FC9" }, "comparator": "≥", "value": 0 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "11": {
+      "title": "⏳ Avg Session Duration",
+      "type": "data",
+      "query": "fetch user.sessions, from:now()-24h\n| filter frontend.name == $app\n| summarize avg_duration_s = round(avg(duration) / 1000000000, decimals:0)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "AVG SESSION LENGTH",
+          "recordField": "avg_duration_s",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "avg_duration_s",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#134FC9" }, "comparator": "≥", "value": 0 }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          { "identifier": "avg_duration_s", "unitCategory": "unspecified", "baseUnit": "none", "displayUnit": null, "decimals": 0, "suffix": " sec", "delimiter": true, "added": 1766081789473 }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "12": {
+      "title": "⚠️ Error Session %",
+      "type": "data",
+      "query": "fetch user.sessions, from:now()-24h\n| filter frontend.name == $app\n| summarize \n    total = count(),\n    with_errors = countIf(error.count > 0)\n| fieldsAdd error_pct = round(toDouble(with_errors) / toDouble(total) * 100, decimals:1)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "SESSIONS WITH ERRORS",
+          "recordField": "error_pct",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "error_pct",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 5 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 15 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 15 }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          { "identifier": "error_pct", "unitCategory": "percentage", "baseUnit": "percent", "displayUnit": null, "decimals": 1, "suffix": "%", "delimiter": true, "added": 1766081789473 }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "13": {
+      "title": "📈 Daily Sessions — 30-Day Trend",
+      "type": "data",
+      "query": "fetch user.sessions, from:now()-30d\n| filter frontend.name == $app\n| makeTimeseries sessions = count(), interval:1d",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "fieldMapping": {
+            "leftAxisValues": ["sessions"],
+            "timestamp": "timeframe"
+          },
+          "seriesOverrides": [
+            { "seriesId": ["sessions"], "override": { "color": { "Default": "#2AB6F4" } } }
+          ]
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "14": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"30-Day Performance Baseline Trends — Replaces Daily Lighthouse Reports\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "TrendUpIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": "#7C38BC", "comparator": "!=", "value": "0" }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "15": {
+      "title": "📈 LCP P75 — 30-Day Baseline (SLO: ≤ 2,500ms)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-30d\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.largest_contentful_paint)\n| summarize p75 = percentile(web_vitals.largest_contentful_paint, 75) / 1000000, by:{day = bin(start_time, 1d)}\n| makeTimeseries p75 = avg(p75), time:{day}, interval:1d",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "fieldMapping": { "leftAxisValues": ["p75"], "timestamp": "timeframe" },
+          "curve": "smooth",
+          "seriesOverrides": [
+            { "seriesId": ["p75"], "override": { "color": { "Default": "#7C38BC" } } }
+          ]
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "p75",
+            "title": "SLO: 2500ms",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#C62239" }, "comparator": "≥", "value": 2500.0 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 10, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "16": {
+      "title": "📈 CLS P75 — 30-Day Baseline (SLO: ≤ 0.1)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-30d\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.cumulative_layout_shift)\n| summarize p75 = percentile(web_vitals.cumulative_layout_shift, 75), by:{day = bin(start_time, 1d)}\n| makeTimeseries p75 = avg(p75), time:{day}, interval:1d",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "fieldMapping": { "leftAxisValues": ["p75"], "timestamp": "timeframe" },
+          "curve": "smooth",
+          "seriesOverrides": [
+            { "seriesId": ["p75"], "override": { "color": { "Default": "#2AB6F4" } } }
+          ]
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "p75",
+            "title": "SLO: 0.1",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#C62239" }, "comparator": "≥", "value": 0.1 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 10, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "17": {
+      "title": "📈 INP P75 — 30-Day Baseline (SLO: ≤ 200ms)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-30d\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.interaction_to_next_paint)\n| summarize p75 = percentile(web_vitals.interaction_to_next_paint, 75) / 1000000, by:{day = bin(start_time, 1d)}\n| makeTimeseries p75 = avg(p75), time:{day}, interval:1d",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "fieldMapping": { "leftAxisValues": ["p75"], "timestamp": "timeframe" },
+          "curve": "smooth",
+          "seriesOverrides": [
+            { "seriesId": ["p75"], "override": { "color": { "Default": "#FF6900" } } }
+          ]
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "p75",
+            "title": "SLO: 200ms",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#C62239" }, "comparator": "≥", "value": 200.0 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 10, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "18": {
+      "title": "📈 FCP P75 — 30-Day Baseline (SLO: ≤ 1,800ms)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-30d\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.first_contentful_paint)\n| summarize p75 = percentile(web_vitals.first_contentful_paint, 75) / 1000000, by:{day = bin(start_time, 1d)}\n| makeTimeseries p75 = avg(p75), time:{day}, interval:1d",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "fieldMapping": { "leftAxisValues": ["p75"], "timestamp": "timeframe" },
+          "curve": "smooth",
+          "seriesOverrides": [
+            { "seriesId": ["p75"], "override": { "color": { "Default": "#4FD5B0" } } }
+          ]
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "p75",
+            "title": "SLO: 1800ms",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#C62239" }, "comparator": "≥", "value": 1800.0 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 10, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "19": {
+      "title": "📈 TTFB P75 — 30-Day Baseline (SLO: ≤ 800ms)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-30d\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.time_to_first_byte)\n| summarize p75 = percentile(web_vitals.time_to_first_byte, 75) / 1000000, by:{day = bin(start_time, 1d)}\n| makeTimeseries p75 = avg(p75), time:{day}, interval:1d",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "fieldMapping": { "leftAxisValues": ["p75"], "timestamp": "timeframe" },
+          "curve": "smooth",
+          "seriesOverrides": [
+            { "seriesId": ["p75"], "override": { "color": { "Default": "#C62239" } } }
+          ]
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "p75",
+            "title": "SLO: 800ms",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#C62239" }, "comparator": "≥", "value": 800.0 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 10, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "20": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Week-over-Week Performance Comparison — Replaces Weekly Lighthouse Report\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "CalendarIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": "#134FC9", "comparator": "!=", "value": "0" }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "21": {
+      "title": "📊 This Week vs Last Week — CWV P75 Comparison",
+      "type": "data",
+      "query": "fetch user.events, from:now()-7d\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize\n    LCP_ms = toDouble(percentile(web_vitals.largest_contentful_paint, 75) / 1000000),\n    CLS = toDouble(percentile(web_vitals.cumulative_layout_shift, 75)),\n    INP_ms = toDouble(percentile(web_vitals.interaction_to_next_paint, 75) / 1000000),\n    FCP_ms = toDouble(percentile(web_vitals.first_contentful_paint, 75) / 1000000),\n    TTFB_ms = toDouble(percentile(web_vitals.time_to_first_byte, 75) / 1000000),\n    Sessions = countDistinct(dt.rum.session.id),\n    Samples = count()\n| fieldsAdd Period = \"This Week\"\n| append [\n    fetch user.events, from:now()-14d, to:now()-7d\n    | filter characteristics.classifier == \"view_summary\"\n    | lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n    | filter app.name == $app\n    | summarize\n        LCP_ms = toDouble(percentile(web_vitals.largest_contentful_paint, 75) / 1000000),\n        CLS = toDouble(percentile(web_vitals.cumulative_layout_shift, 75)),\n        INP_ms = toDouble(percentile(web_vitals.interaction_to_next_paint, 75) / 1000000),\n        FCP_ms = toDouble(percentile(web_vitals.first_contentful_paint, 75) / 1000000),\n        TTFB_ms = toDouble(percentile(web_vitals.time_to_first_byte, 75) / 1000000),\n        Sessions = countDistinct(dt.rum.session.id),\n        Samples = count()\n    | fieldsAdd Period = \"Last Week\"\n]\n| fields Period, Sessions, Samples, LCP_ms, CLS, INP_ms, FCP_ms, TTFB_ms",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "LCP_ms",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 2500 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 4000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 4000 }
+            ]
+          },
+          {
+            "id": 2,
+            "field": "CLS",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 0.1 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 0.25 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 0.25 }
+            ]
+          },
+          {
+            "id": 3,
+            "field": "INP_ms",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 200 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 500 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 500 }
+            ]
+          },
+          {
+            "id": 4,
+            "field": "FCP_ms",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 1800 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 3000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 3000 }
+            ]
+          },
+          {
+            "id": 5,
+            "field": "TTFB_ms",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 800 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 1800 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 1800 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 10, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "22": {
+      "title": "📊 Week-over-Week CWV by Page (Top 10 Pages)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-7d\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize\n    This_LCP = toDouble(percentile(web_vitals.largest_contentful_paint, 75) / 1000000),\n    This_CLS = toDouble(percentile(web_vitals.cumulative_layout_shift, 75)),\n    This_INP = toDouble(percentile(web_vitals.interaction_to_next_paint, 75) / 1000000),\n    This_TTFB = toDouble(percentile(web_vitals.time_to_first_byte, 75) / 1000000),\n    Samples = count(),\n    by:{view.detected_name}\n| filter Samples >= 30\n| sort Samples desc\n| limit 10\n| lookup [\n    fetch user.events, from:now()-14d, to:now()-7d\n    | filter characteristics.classifier == \"view_summary\"\n    | lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n    | filter app.name == $app\n    | summarize\n        Prev_LCP = toDouble(percentile(web_vitals.largest_contentful_paint, 75) / 1000000),\n        Prev_CLS = toDouble(percentile(web_vitals.cumulative_layout_shift, 75)),\n        Prev_INP = toDouble(percentile(web_vitals.interaction_to_next_paint, 75) / 1000000),\n        Prev_TTFB = toDouble(percentile(web_vitals.time_to_first_byte, 75) / 1000000),\n        by:{view.detected_name}\n], sourceField:view.detected_name, lookupField:view.detected_name, prefix:\"prev.\"\n| fieldsAdd\n    LCP_Delta = round(This_LCP - prev.Prev_LCP, decimals:0),\n    TTFB_Delta = round(This_TTFB - prev.Prev_TTFB, decimals:0)\n| fieldsRename Page = view.detected_name\n| fields Page, Samples, This_LCP, prev.Prev_LCP, LCP_Delta, This_CLS, prev.Prev_CLS, This_INP, prev.Prev_INP, This_TTFB, prev.Prev_TTFB, TTFB_Delta",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "This_LCP",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 2500 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 4000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 4000 }
+            ]
+          },
+          {
+            "id": 2,
+            "field": "prev.Prev_LCP",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 2500 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 4000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 4000 }
+            ]
+          },
+          {
+            "id": 3,
+            "field": "This_TTFB",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 800 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 1800 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 1800 }
+            ]
+          },
+          {
+            "id": 4,
+            "field": "prev.Prev_TTFB",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 800 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 1800 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 1800 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 10, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "23": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Page-Level Performance Audit — Replaces Per-Page Lighthouse Reports\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "WebApplicationIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": "#4FD5B0", "comparator": "!=", "value": "0" }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "24": {
+      "title": "📋 All Pages — Percentile Distribution (P10–P95) with SLO Status",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.largest_contentful_paint)\n| summarize \n    Samples = count(),\n    Sessions = countDistinct(dt.rum.session.id),\n    LCP_P50 = toDouble(percentile(web_vitals.largest_contentful_paint, 50) / 1000000),\n    LCP_P75 = toDouble(percentile(web_vitals.largest_contentful_paint, 75) / 1000000),\n    LCP_P95 = toDouble(percentile(web_vitals.largest_contentful_paint, 95) / 1000000),\n    CLS_P75 = toDouble(percentile(web_vitals.cumulative_layout_shift, 75)),\n    INP_P75 = toDouble(percentile(web_vitals.interaction_to_next_paint, 75) / 1000000),\n    FCP_P75 = toDouble(percentile(web_vitals.first_contentful_paint, 75) / 1000000),\n    TTFB_P75 = toDouble(percentile(web_vitals.time_to_first_byte, 75) / 1000000),\n    by:{view.detected_name}\n| filter Samples >= 10\n| fieldsAdd \n    LCP_SLO = if(LCP_P75 <= 2500.0, \"✅\", else:\"❌\"),\n    CLS_SLO = if(CLS_P75 <= 0.1, \"✅\", else:\"❌\"),\n    INP_SLO = if(INP_P75 <= 200.0, \"✅\", else:\"❌\")\n| fieldsRename Page = view.detected_name\n| sort Sessions desc\n| limit 20\n| fields Page, Sessions, Samples, LCP_P50, LCP_P75, LCP_P95, LCP_SLO, CLS_P75, CLS_SLO, INP_P75, INP_SLO, FCP_P75, TTFB_P75",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1, "field": "LCP_P50", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 2500 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 4000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 4000 }
+            ]
+          },
+          {
+            "id": 2, "field": "LCP_P75", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 2500 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 4000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 4000 }
+            ]
+          },
+          {
+            "id": 3, "field": "LCP_P95", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 2500 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 4000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 4000 }
+            ]
+          },
+          {
+            "id": 4, "field": "CLS_P75", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 0.1 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 0.25 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 0.25 }
+            ]
+          },
+          {
+            "id": 5, "field": "INP_P75", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 200 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 500 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 500 }
+            ]
+          },
+          {
+            "id": 6, "field": "FCP_P75", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 1800 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 3000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 3000 }
+            ]
+          },
+          {
+            "id": 7, "field": "TTFB_P75", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 800 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 1800 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 1800 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "25": {
+      "title": "🔴 Pages Failing CWV SLOs — Prioritised by Guest Impact",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize \n    Sessions = countDistinct(dt.rum.session.id),\n    LCP_P75 = toDouble(percentile(web_vitals.largest_contentful_paint, 75) / 1000000),\n    CLS_P75 = toDouble(percentile(web_vitals.cumulative_layout_shift, 75)),\n    INP_P75 = toDouble(percentile(web_vitals.interaction_to_next_paint, 75) / 1000000),\n    FCP_P75 = toDouble(percentile(web_vitals.first_contentful_paint, 75) / 1000000),\n    TTFB_P75 = toDouble(percentile(web_vitals.time_to_first_byte, 75) / 1000000),\n    Samples = count(),\n    by:{view.detected_name}\n| filter Samples >= 30\n| fieldsAdd \n    LCP_SLO = if(LCP_P75 <= 2500.0, \"✅\", else:\"❌\"),\n    CLS_SLO = if(CLS_P75 <= 0.1, \"✅\", else:\"❌\"),\n    INP_SLO = if(INP_P75 <= 200.0, \"✅\", else:\"❌\")\n| filter LCP_P75 > 2500.0 or CLS_P75 > 0.1 or INP_P75 > 200.0\n| sort Sessions desc\n| limit 10\n| fieldsRename Page = view.detected_name\n| fields Page, Sessions, LCP_P75, LCP_SLO, CLS_P75, CLS_SLO, INP_P75, INP_SLO, FCP_P75, TTFB_P75",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1, "field": "LCP_P75", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 2500 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 4000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 4000 }
+            ]
+          },
+          {
+            "id": 2, "field": "CLS_P75", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 0.1 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 0.25 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 0.25 }
+            ]
+          },
+          {
+            "id": 3, "field": "INP_P75", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 200 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 500 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 500 }
+            ]
+          },
+          {
+            "id": 4, "field": "FCP_P75", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 1800 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 3000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 3000 }
+            ]
+          },
+          {
+            "id": 5, "field": "TTFB_P75", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 800 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 1800 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 1800 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "26": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Error Rate Baseline & Trends — JS Errors, HTTP Errors, Exceptions\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "WarningIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": "#C62239", "comparator": "!=", "value": "0" }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "27": {
+      "title": "⚠️ Total JS Errors (24h)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"error\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize total_errors = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "singleValue": {
+          "label": "JS/HTTP ERRORS",
+          "recordField": "total_errors",
+          "colorThresholdTarget": "background",
+          "sparklineSettings": { "isVisible": false },
+          "trend": { "isVisible": false }
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "total_errors",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 100 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 500 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 500 }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          { "identifier": "total_errors", "unitCategory": "unspecified", "baseUnit": "count", "displayUnit": null, "decimals": 0, "suffix": "", "delimiter": true, "added": 1766081789473 }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "28": {
+      "title": "📊 Errors by Source Type (24h)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"error\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize Errors = count(), Sessions = countDistinct(dt.rum.session.id), by:{error.source, error.type}\n| fieldsAdd Errors_Per_Session = round(toDouble(Errors) / toDouble(Sessions), decimals:2)\n| fieldsRename Source = error.source, Type = error.type\n| sort Errors desc",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "29": {
+      "title": "📈 Error Count — 30-Day Baseline Trend",
+      "type": "data",
+      "query": "fetch user.events, from:now()-30d\n| filter characteristics.classifier == \"error\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| makeTimeseries errors = count(), interval:1d",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "fieldMapping": { "leftAxisValues": ["errors"], "timestamp": "timeframe" },
+          "curve": "smooth",
+          "seriesOverrides": [
+            { "seriesId": ["errors"], "override": { "color": { "Default": "#C62239" } } }
+          ]
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 10, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "30": {
+      "title": "🔴 Top 15 Errors by Page & Error Name",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"error\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize Errors = count(), Sessions = countDistinct(dt.rum.session.id), by:{page.detected_name, error.name, error.source}\n| fieldsAdd Impact = round(toDouble(Errors) / toDouble(Sessions), decimals:2)\n| fieldsRename Page = page.detected_name, Error = error.name, Source = error.source\n| sort Errors desc\n| limit 15\n| fields Page, Source, Error, Errors, Sessions, Impact",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "31": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Resource & Request Performance — First-Party vs Third-Party\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "NetworkIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": "#FF6900", "comparator": "!=", "value": "0" }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "32": {
+      "title": "🌐 Request Performance — First-Party vs Third-Party (24h)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"request\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(duration)\n| summarize \n    Requests = count(),\n    Avg_ms = toDouble(round(avg(duration) / 1000000, decimals:0)),\n    P75_ms = toDouble(round(percentile(duration, 75) / 1000000, decimals:0)),\n    P95_ms = toDouble(round(percentile(duration, 95) / 1000000, decimals:0)),\n    Failed = countIf(isNotNull(error.name)),\n    by:{url.provider}\n| fieldsAdd Error_Rate_Pct = round(toDouble(Failed) / toDouble(Requests) * 100, decimals:2)\n| fieldsRename Provider = url.provider\n| sort Requests desc",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1, "field": "P75_ms", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 500 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 2000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 2000 }
+            ]
+          },
+          {
+            "id": 2, "field": "Error_Rate_Pct", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 1 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 5 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 5 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "33": {
+      "title": "🐌 Slowest Third-Party Domains — Top 10 by P75 Latency (ms)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"request\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter url.provider == \"third_party\"\n| filter isNotNull(duration)\n| summarize \n    Requests = count(),\n    Avg_ms = toDouble(round(avg(duration) / 1000000, decimals:0)),\n    P75_ms = toDouble(round(percentile(duration, 75) / 1000000, decimals:0)),\n    P95_ms = toDouble(round(percentile(duration, 95) / 1000000, decimals:0)),\n    by:{url.domain}\n| filter Requests >= 10\n| sort P75_ms desc\n| limit 10\n| fieldsRename Domain = url.domain",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "fieldMapping": {
+            "categoryAxisValues": ["Domain"],
+            "leftAxisValues": ["P75_ms"]
+          },
+          "categoricalBarChartSettings": { "categoryAxisTickRotation": "auto" },
+          "seriesOverrides": [
+            { "seriesId": ["P75_ms"], "override": { "color": "#FF6900" } }
+          ]
+        },
+        "thresholds": [
+          {
+            "id": 1, "field": "P75_ms", "title": "Slow", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#C62239" }, "comparator": "≥", "value": 1000 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "34": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Performance by Device Type — Mobile vs Desktop Baseline\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "DeviceMobileIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": "#2AB6F4", "comparator": "!=", "value": "0" }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "35": {
+      "title": "📱 CWV P75 by Device Type",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| summarize \n    Sessions = countDistinct(dt.rum.session.id),\n    LCP_P75 = toDouble(percentile(web_vitals.largest_contentful_paint, 75) / 1000000),\n    CLS_P75 = toDouble(percentile(web_vitals.cumulative_layout_shift, 75)),\n    INP_P75 = toDouble(percentile(web_vitals.interaction_to_next_paint, 75) / 1000000),\n    FCP_P75 = toDouble(percentile(web_vitals.first_contentful_paint, 75) / 1000000),\n    TTFB_P75 = toDouble(percentile(web_vitals.time_to_first_byte, 75) / 1000000),\n    by:{device.type}\n| fieldsAdd \n    LCP_SLO = if(LCP_P75 <= 2500.0, \"✅\", else:\"❌\"),\n    CLS_SLO = if(CLS_P75 <= 0.1, \"✅\", else:\"❌\"),\n    INP_SLO = if(INP_P75 <= 200.0, \"✅\", else:\"❌\")\n| fieldsRename Device = device.type\n| sort Sessions desc\n| fields Device, Sessions, LCP_P75, LCP_SLO, CLS_P75, CLS_SLO, INP_P75, INP_SLO, FCP_P75, TTFB_P75",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1, "field": "LCP_P75", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 2500 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 4000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 4000 }
+            ]
+          },
+          {
+            "id": 2, "field": "CLS_P75", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 0.1 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 0.25 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 0.25 }
+            ]
+          },
+          {
+            "id": 3, "field": "INP_P75", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 200 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 500 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 500 }
+            ]
+          },
+          {
+            "id": 4, "field": "FCP_P75", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 1800 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 3000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 3000 }
+            ]
+          },
+          {
+            "id": 5, "field": "TTFB_P75", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 800 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 1800 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 1800 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "36": {
+      "title": "📈 LCP P75 by Device — 30-Day Trend (ms)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-30d\n| filter characteristics.classifier == \"view_summary\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(web_vitals.largest_contentful_paint)\n| summarize lcp_p75 = percentile(web_vitals.largest_contentful_paint, 75) / 1000000, by:{day = bin(start_time, 1d), device.type}\n| makeTimeseries lcp_p75 = avg(lcp_p75), time:{day}, by:{device.type}, interval:1d",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "fieldMapping": { "leftAxisValues": ["lcp_p75"], "timestamp": "timeframe" },
+          "curve": "smooth"
+        },
+        "thresholds": [
+          {
+            "id": 1, "field": "lcp_p75", "title": "SLO: 2500ms", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#C62239" }, "comparator": "≥", "value": 2500 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 10, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "37": {
+      "title": "",
+      "type": "data",
+      "query": "data record(a=\"Navigation & Page Load Performance — Load Time Baselines\")",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "isIconVisible": true,
+          "prefixIcon": "SpeedIcon",
+          "colorThresholdTarget": "background"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "a",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": "#7C38BC", "comparator": "!=", "value": "0" }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "38": {
+      "title": "📋 Page Load Times — Top 15 Pages by Sessions (P50/P75/P95 in ms)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-24h\n| filter characteristics.classifier == \"navigation\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(duration)\n| summarize \n    Sessions = countDistinct(dt.rum.session.id),\n    Navigations = count(),\n    P50_ms = toDouble(round(percentile(duration, 50) / 1000000, decimals:0)),\n    P75_ms = toDouble(round(percentile(duration, 75) / 1000000, decimals:0)),\n    P95_ms = toDouble(round(percentile(duration, 95) / 1000000, decimals:0)),\n    Avg_ms = toDouble(round(avg(duration) / 1000000, decimals:0)),\n    by:{view.detected_name}\n| sort Sessions desc\n| limit 15\n| fieldsRename Page = view.detected_name\n| fields Page, Sessions, Navigations, P50_ms, P75_ms, P95_ms, Avg_ms",
+      "visualization": "table",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1, "field": "P75_ms", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 3000 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 6000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 6000 }
+            ]
+          },
+          {
+            "id": 2, "field": "P95_ms", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 1, "color": { "Default": "#4FD5B0" }, "comparator": "≤", "value": 5000 },
+              { "id": 2, "color": { "Default": "#F8B000" }, "comparator": "≤", "value": 10000 },
+              { "id": 3, "color": { "Default": "#C62239" }, "comparator": ">", "value": 10000 }
+            ]
+          }
+        ],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 5, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "39": {
+      "title": "📈 Navigation Load Time P75 — 30-Day Trend (ms)",
+      "type": "data",
+      "query": "fetch user.events, from:now()-30d\n| filter characteristics.classifier == \"navigation\"\n| lookup [smartscapeNodes \"FRONTEND\" | fields id_classic, name], sourceField:dt.rum.application.entity, lookupField:id_classic, prefix:\"app.\"\n| filter app.name == $app\n| filter isNotNull(duration)\n| summarize p75 = percentile(duration, 75) / 1000000, by:{day = bin(start_time, 1d)}\n| makeTimeseries p75 = avg(p75), time:{day}, interval:1d",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "fieldMapping": { "leftAxisValues": ["p75"], "timestamp": "timeframe" },
+          "curve": "smooth",
+          "seriesOverrides": [
+            { "seriesId": ["p75"], "override": { "color": { "Default": "#7C38BC" } } }
+          ]
+        },
+        "thresholds": [],
+        "unitsOverrides": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 10, "maxResultMegaBytes": 100, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    }
+  },
+  "layouts": {
+    "0": { "x": 0, "y": 0, "w": 24, "h": 7 },
+    "1": { "x": 0, "y": 7, "w": 24, "h": 1 },
+    "2": { "x": 0, "y": 8, "w": 4, "h": 3 },
+    "3": { "x": 4, "y": 8, "w": 4, "h": 3 },
+    "4": { "x": 8, "y": 8, "w": 4, "h": 3 },
+    "5": { "x": 12, "y": 8, "w": 4, "h": 3 },
+    "6": { "x": 16, "y": 8, "w": 4, "h": 3 },
+    "7": { "x": 20, "y": 8, "w": 4, "h": 3 },
+    "8": { "x": 0, "y": 11, "w": 24, "h": 1 },
+    "9": { "x": 0, "y": 12, "w": 6, "h": 3 },
+    "10": { "x": 6, "y": 12, "w": 6, "h": 3 },
+    "11": { "x": 12, "y": 12, "w": 6, "h": 3 },
+    "12": { "x": 18, "y": 12, "w": 6, "h": 3 },
+    "13": { "x": 0, "y": 15, "w": 24, "h": 5 },
+    "14": { "x": 0, "y": 20, "w": 24, "h": 1 },
+    "15": { "x": 0, "y": 21, "w": 8, "h": 5 },
+    "16": { "x": 8, "y": 21, "w": 8, "h": 5 },
+    "17": { "x": 16, "y": 21, "w": 8, "h": 5 },
+    "18": { "x": 0, "y": 26, "w": 12, "h": 5 },
+    "19": { "x": 12, "y": 26, "w": 12, "h": 5 },
+    "20": { "x": 0, "y": 31, "w": 24, "h": 1 },
+    "21": { "x": 0, "y": 32, "w": 12, "h": 6 },
+    "22": { "x": 12, "y": 32, "w": 12, "h": 8 },
+    "23": { "x": 0, "y": 40, "w": 24, "h": 1 },
+    "24": { "x": 0, "y": 41, "w": 24, "h": 8 },
+    "25": { "x": 0, "y": 49, "w": 24, "h": 7 },
+    "26": { "x": 0, "y": 56, "w": 24, "h": 1 },
+    "27": { "x": 0, "y": 57, "w": 6, "h": 3 },
+    "28": { "x": 6, "y": 57, "w": 18, "h": 5 },
+    "29": { "x": 0, "y": 62, "w": 12, "h": 5 },
+    "30": { "x": 12, "y": 60, "w": 12, "h": 7 },
+    "31": { "x": 0, "y": 67, "w": 24, "h": 1 },
+    "32": { "x": 0, "y": 68, "w": 12, "h": 5 },
+    "33": { "x": 12, "y": 68, "w": 12, "h": 5 },
+    "34": { "x": 0, "y": 73, "w": 24, "h": 1 },
+    "35": { "x": 0, "y": 74, "w": 12, "h": 6 },
+    "36": { "x": 12, "y": 74, "w": 12, "h": 6 },
+    "37": { "x": 0, "y": 80, "w": 24, "h": 1 },
+    "38": { "x": 0, "y": 81, "w": 12, "h": 7 },
+    "39": { "x": 12, "y": 81, "w": 12, "h": 5 }
+  },
+  "importedWithCode": false,
+  "settings": {
+    "defaultTimeframe": {
+      "value": {
+        "from": "now()-24h",
+        "to": "now()"
+      },
+      "enabled": true
+    }
+  }
+}
