@@ -78,10 +78,8 @@ else
   fi
 
   echo "📥 Applying latest workspace structure..."
-  git checkout origin/main -- . 2>/dev/null || true
-  git checkout -b main 2>/dev/null || git checkout main 2>/dev/null || true
-  git branch --set-upstream-to=origin/main main 2>/dev/null || true
-  git reset origin/main 2>/dev/null || true
+  git checkout -B main origin/main
+  git branch --set-upstream-to=origin/main main
   echo "   ✅ Workspace updated"
 fi
 echo ""
