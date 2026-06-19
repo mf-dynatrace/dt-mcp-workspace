@@ -1,3 +1,6 @@
 {
-    "chat.history.enabled": false
+    "chat.history.enabled": false,
+    "files.exclude": {
+        "**/*.template.md": true
+    }
 }
