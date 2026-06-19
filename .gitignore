@@ -24,6 +24,27 @@ reference/*.md
 # Generated reports (tenant-specific)
 report/
 
+# User-generated content (dashboards, workflows, prompts created during sessions)
+local/
+prompt.md
+*.prompt.local.md
+AI Dash Gen Prompt.md
+
+# User-generated examples (client dashboards, injectors created during sessions)
+# Tracked repo examples are unaffected — gitignore only applies to untracked files
+example/*.json
+example/*.workflow.json
+example/*.yaml
+example/*_README.md
+
+# Old flat skill files (superseded by skills/*/SKILL.md subdirectories)
+skills/*.md
+
+# User agent/tool configs
+.agents/
+.claude/*
+!.claude/settings.json
+
 # Node modules (if any local development)
 node_modules/
 

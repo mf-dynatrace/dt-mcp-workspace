@@ -94,6 +94,17 @@ else
 fi
 echo ""
 
+# --- 3b. Remove old flat skill files (superseded by skills/*/SKILL.md) ---
+old_skills=$(find skills -maxdepth 1 -name "*.md" -type f 2>/dev/null)
+if [ -n "$old_skills" ]; then
+  echo "🧹 Removing old flat skill files (now in skills/*/SKILL.md)..."
+  echo "$old_skills" | while IFS= read -r f; do
+    rm -f "$f"
+    echo "   ✅ Removed $(basename "$f")"
+  done
+  echo ""
+fi
+
 # --- 4. Initialize reference files from templates ---
 echo "📄 Initializing reference files from templates..."
 for template in reference/*.template.md; do
