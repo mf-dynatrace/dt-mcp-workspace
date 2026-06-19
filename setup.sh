@@ -92,6 +92,11 @@ else
 fi
 echo ""
 
+# --- 5. Clean git status (remove M/U indicators in VS Code) ---
+if [ -d .git ]; then
+  git checkout -- . 2>/dev/null || true
+fi
+
 echo "======================================="
 echo "✅ Setup complete!"
 echo ""

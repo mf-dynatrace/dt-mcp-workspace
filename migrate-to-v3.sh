@@ -163,3 +163,6 @@ echo "  • Skills auto-sync from upstream weekly via GitHub Actions"
 echo ""
 echo "Your .env and reference data are preserved and will not be affected by future git pulls."
 echo ""
+
+# --- Clean git status (remove M/U indicators in VS Code) ---
+git checkout -- . 2>/dev/null || true
