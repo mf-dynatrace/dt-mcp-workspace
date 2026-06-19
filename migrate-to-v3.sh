@@ -78,6 +78,11 @@ else
   fi
 
   echo "📥 Applying latest workspace structure..."
+  # The folder has untracked files that conflict with the incoming branch.
+  # Since reference files are already backed up, add everything and create a
+  # throwaway commit so git checkout can overwrite cleanly.
+  git add -A
+  git commit -m "temp: pre-migration snapshot" --allow-empty -q
   git checkout -B main origin/main
   git branch --set-upstream-to=origin/main main
   echo "   ✅ Workspace updated"
