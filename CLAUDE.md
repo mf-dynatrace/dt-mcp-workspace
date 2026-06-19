@@ -90,6 +90,7 @@ Complete all items below before executing any query, command, or code change:
 
 - [ ] Read `.env` and resolve feature flags
 - [ ] Resolve `user.id` when `MCP_USE_USER_VARIABLE=yes`
+- [ ] Read `custom-instructions.md` (if present) for user overrides
 - [ ] Read all files in `skills/` directory in full
 - [ ] Read `reference/DATA_REFERENCE_INDEX.md` and `reference/Entities_Reference.md`
 - [ ] Read `reference/MCP_Query_Optimization_Guide.md`
@@ -205,8 +206,12 @@ If any `reference/*.md` file is missing (first run or fresh clone), **auto-creat
 ```
 For each reference/*.template.md:
   If reference/<name>.md does NOT exist → copy template to create it
+If custom-instructions.md does NOT exist → copy custom-instructions.template.md to create it
 ```
 This is equivalent to running `bash setup.sh`. Reference files are gitignored (tenant-specific data) — templates are tracked.
+
+### Step 0.75: Read Custom Instructions (If Present)
+If `custom-instructions.md` exists in the workspace root, **read it now**. Its contents are user-defined overrides that **take precedence** over defaults for the same topic (e.g., timeframes, entity focus, output format, exclusion rules). If the file is missing or only contains template comments, skip this step.
 
 ### Step 1: Read These Files FIRST (No Queries Yet!)
 ```

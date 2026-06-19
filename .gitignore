@@ -7,6 +7,11 @@
 # Keep the example file
 !.env.example
 
+# Custom instructions (tenant-specific, user-edited)
+# Template is tracked; actual file is local-only
+custom-instructions.md
+!custom-instructions.template.md
+
 # Reference files (tenant-specific, auto-populated by AI sessions)
 # Templates are tracked; actual reference files are local-only
 reference/*.md

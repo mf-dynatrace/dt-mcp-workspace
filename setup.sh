@@ -34,6 +34,18 @@ else
 fi
 echo ""
 
+# --- 1b. Initialize custom-instructions.md from template ---
+if [ -f custom-instructions.md ]; then
+  echo "📝 custom-instructions.md already exists (keeping your customizations)"
+else
+  if [ -f custom-instructions.template.md ]; then
+    cp custom-instructions.template.md custom-instructions.md
+    echo "📝 Created custom-instructions.md from template"
+    echo "   ℹ️  Edit this file to add tenant-specific instructions"
+  fi
+fi
+echo ""
+
 # --- 2. Check .env ---
 if [ -f .env ]; then
   echo "🔑 .env file found"

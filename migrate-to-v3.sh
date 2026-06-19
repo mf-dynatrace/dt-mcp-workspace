@@ -33,12 +33,17 @@ else
 fi
 echo ""
 
-# --- 2. Back up .env ---
+# --- 2. Back up .env and custom-instructions ---
 if [ -f .env ]; then
   cp .env ".env.backup-$(date +%Y%m%d-%H%M%S)"
   echo "🔑 Backed up .env"
 else
   echo "⚠️  No .env found"
+fi
+
+if [ -f custom-instructions.md ]; then
+  cp custom-instructions.md ".custom-instructions.backup-$(date +%Y%m%d-%H%M%S).md"
+  echo "📝 Backed up custom-instructions.md"
 fi
 echo ""
 
@@ -118,6 +123,16 @@ if [ -n "${BACKUP_DIR:-}" ] && [ -d "$BACKUP_DIR" ]; then
   done
   echo "   ✅ Restored $restored reference file(s)"
   echo "   📁 Backup kept at $BACKUP_DIR/ (safe to delete when verified)"
+fi
+
+# Restore custom-instructions.md if it was backed up
+custom_backup=$(ls -1t .custom-instructions.backup-*.md 2>/dev/null | head -1)
+if [ -n "$custom_backup" ]; then
+  cp "$custom_backup" custom-instructions.md
+  echo "📝 Restored custom-instructions.md"
+elif [ ! -f custom-instructions.md ] && [ -f custom-instructions.template.md ]; then
+  cp custom-instructions.template.md custom-instructions.md
+  echo "📝 Created custom-instructions.md from template"
 fi
 echo ""
 
