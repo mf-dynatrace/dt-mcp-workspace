@@ -19,6 +19,7 @@ reference/*.md
 
 # Migration backups
 .reference-backup-*
+.custom-instructions.backup-*
 
 # Generated reports (tenant-specific)
 report/
