@@ -5,7 +5,21 @@
 
 ---
 
-## 🔌 MCP Server Connection (How Claude Connects)
+## � MANDATORY: Re-Read Instructions After Sync/Pull (DO THIS FIRST)
+
+> **The `Auto-pull latest updates` task runs automatically on folder open** (`git pull --ff-only` + `bash setup.sh`). It can **overwrite these instruction files AFTER** the chat has already loaded them into context — leaving you steering from a stale copy.
+
+**At the very start of every session, BEFORE acting on anything in your initial context, you MUST:**
+1. Re-read `CLAUDE.md` and `.github/copilot-instructions.md` from disk with `read_file`. **Do NOT trust the copy loaded into your initial context** — it may predate the auto-pull.
+2. Run `git log -1 --format='%H %cd'` to confirm whether `HEAD` moved since the workspace opened (the auto-pull may still have been running when your context was captured).
+3. If the on-disk content differs from what was in your initial context, **discard the stale version and follow the freshly-read files**.
+4. Re-read again if you observe a mid-session sync (auto-pull task output appears, files show as modified, or the user mentions a pull/sync). Treat the on-disk files as the single source of truth at all times.
+
+**Never assume your initial context is current — always confirm against the on-disk files first.**
+
+---
+
+## �🔌 MCP Server Connection (How Claude Connects)
 
 > **If the Dynatrace MCP tools are missing in a session, this is almost always why.**
 
@@ -88,6 +102,7 @@ When `MCP_USE_USER_VARIABLE=no`:
 
 Complete all items below before executing any query, command, or code change:
 
+- [ ] Re-read `CLAUDE.md` and `.github/copilot-instructions.md` from disk (auto-pull may have updated them — do NOT trust initial context)
 - [ ] Read `.env` and resolve feature flags
 - [ ] Resolve `user.id` when `MCP_USE_USER_VARIABLE=yes`
 - [ ] Read `custom-instructions.md` (if present) for user overrides
@@ -95,6 +110,7 @@ Complete all items below before executing any query, command, or code change:
 - [ ] Read `reference/DATA_REFERENCE_INDEX.md` and `reference/Entities_Reference.md`
 - [ ] Read `reference/MCP_Query_Optimization_Guide.md`
 - [ ] Confirm required data is not already documented in reference files
+- [ ] **If using `dtctl`**: verify it is connected to the tenant in `.env` (`DT_ENVIRONMENT_URL`) before any deploy/publish operation
 
 ---
 
@@ -192,6 +208,14 @@ At the END of every session, verify you have documented:
 ---
 
 ## 🚀 SESSION STARTUP PROTOCOL
+
+### Step 0a: Re-Read Instruction Files From Disk (ALWAYS DO THIS FIRST)
+```
+1. read_file CLAUDE.md AND .github/copilot-instructions.md (do NOT trust initial context)
+2. git log -1 --format='%H %cd' to detect if auto-pull moved HEAD
+3. If on-disk content differs from initial context → follow the on-disk version
+```
+See the "Re-Read Instructions After Sync/Pull" section at the top of this file for full details.
 
 ### Step 0: Read `.env` and Resolve Feature Flags (ALWAYS DO THIS FIRST)
 ```
@@ -401,6 +425,7 @@ Skills are portable knowledge packages providing domain-specific DQL context. **
 | `skills/dt-obs-problems/SKILL.md` | Problem analysis, root cause, impact | Davis problems |
 | `skills/dt-obs-hosts/SKILL.md` | Host/process metrics, infrastructure | CPU, memory, disk |
 | `skills/dt-obs-kubernetes/SKILL.md` | K8s clusters, pods, nodes, workloads | Kubernetes |
+| `skills/dt-finops-kubernetes/SKILL.md` | K8s FinOps, cost optimization, resource utilization, rightsizing | K8s cost analysis, FinOps reports |
 | `skills/dt-obs-aws/SKILL.md` | AWS resources, cost, security | AWS infrastructure |
 | `skills/dt-obs-azure/SKILL.md` | Azure cloud resources, cost, networking | Azure infrastructure |
 | `skills/dt-obs-gcp/SKILL.md` | GCP cloud resources, cost, networking | GCP infrastructure |
@@ -457,7 +482,32 @@ Prompt files in `.github/prompts/` work as VS Code slash commands:
 
 ---
 
-## 📊 Report Output Standards
+## � dtctl Tenant Safety
+
+> **⛔ ALWAYS verify the active dtctl tenant matches `.env` before any deploy, publish, or write operation.**
+
+Run the following check before using `dtctl` to deploy dashboards, notebooks, workflows, or any other resource:
+
+```bash
+# Check which tenant dtctl is currently connected to
+dtctl env list
+# or
+dtctl env current
+```
+
+**Cross-reference the output URL against `DT_ENVIRONMENT_URL` in `.env`.** If they do not match, switch the context or abort — **never publish to the wrong tenant**.
+
+### Switching dtctl Tenant Context
+If the active tenant is wrong, switch before proceeding:
+```bash
+dtctl env use <env-name>
+```
+
+Then re-verify before continuing.
+
+---
+
+## �📊 Report Output Standards
 
 **MANDATORY:** All generated reports (FinOps, analysis, investigation summaries) MUST be saved to the `/report` directory in the workspace.
 
