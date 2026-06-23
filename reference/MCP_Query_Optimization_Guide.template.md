@@ -6,7 +6,33 @@
 
 ---
 
-## 📊 Query Cost Reference
+## � HARD STOPS — Queries you must NEVER write
+
+> **These rules are CRITICAL. Check every DQL query against this table before executing.**
+
+| ❌ Forbidden Pattern | Why | Cost |
+|----------------------|-----|------|
+| `fetch spans, from:now()-7d` without entity filter | Scans ALL spans for 7 days | 300+ GB |
+| `fetch user.events` + `page.url.domain == "…"` string filter | Domain string scan dominates | 174+ GB per 3d |
+| `fetch logs` without `loglevel` filter | Unfiltered log scan | 85+ GB per 24h |
+| `fetch spans` without `dt.entity.service` filter | Spans across all services | 100+ GB per 24h |
+| `fetch user.events` with no `characteristics.classifier` pre-filter | Full event scan | 120+ GB per 7d |
+| `fetch bizevents` without `event.type` filter | Scans all BizEvent types | 10–50 GB |
+
+**If your query matches any row above, STOP and rewrite it before executing.**
+
+### Pre-Query Checklist
+
+1. **FREE alternative?** (`timeseries`, `find_entity_by_name`, `list_problems`) → Use it first.
+2. **Entity ID cached?** → Check `reference/Entities_Reference.md` before any `find_entity_by_name`.
+3. **Timeframe minimal?** → Start at 24h; only extend if necessary.
+4. **Filters first?** → `event.type`, `loglevel`, `characteristics.classifier`, `dt.entity.*` before anything else.
+5. **`summarize` not `limit 1000`?** → Always aggregate; never fetch raw rows.
+6. **`user.events` domain filter?** → NEVER. Use `page.url.path` exact match instead.
+
+---
+
+## �📊 Query Cost Reference
 
 | Query Type | Typical Data Scanned | Cost Level |
 |------------|---------------------|------------|

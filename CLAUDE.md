@@ -336,56 +336,65 @@ Only use MCP tools for data NOT already documented.
 
 ---
 
-## Quick Reference: Query Cost Rules
+## ⛔ CRITICAL: MCP Query Cost Guardrails — READ BEFORE EVERY QUERY
 
-### FREE Queries (Use First)
-```
-find_entity_by_name, list_problems, list_vulnerabilities, timeseries metrics
-```
+> **These rules are INLINED here because LLMs must not skip them by deferring to a file read.**
+> The full guide is `reference/MCP_Query_Optimization_Guide.md` but the rules below are the binding constraints.
 
-### VERY LOW Cost (<0.3 GB) — User Sessions
+### 🚨 HARD STOPS — Queries you must NEVER write
+
+| ❌ Forbidden Pattern | Why | Cost |  
+|----------------------|-----|------|
+| `fetch spans, from:now()-7d` without entity filter | Scans ALL spans for 7 days | 300+ GB |
+| `fetch user.events` + `page.url.domain == "…"` string filter | Domain string scan dominates | 174+ GB per 3d |
+| `fetch logs` without `loglevel` filter | Unfiltered log scan | 85+ GB per 24h |
+| `fetch spans` without `dt.entity.service` filter | Spans across all services | 100+ GB per 24h |
+| `fetch user.events` with no `characteristics.classifier` pre-filter | Full event scan | 120+ GB per 7d |
+| `fetch bizevents` without `event.type` filter | Scans all BizEvent types | 10–50 GB |
+
+**If your query matches any row above, STOP and rewrite it before executing.**
+
+### Query Cost Reference (use this to choose your approach)
+
+| Query Type | Cost | Use When |
+|------------|------|----------|
+| `find_entity_by_name`, `list_problems`, `timeseries` | **FREE** | Always try first |
+| `user.sessions` (any filter, 7d) | **<0.3 GB** | Session counts, RUM overview |
+| BizEvents + `event.type` filter (7d) | **0.5–5 GB** | Business event analysis |
+| `user.events` + `classifier` + `page.url.path` (24h) | **2–5 GB** | RUM event detail |
+| Logs + `loglevel == "ERROR"` (24h) | **10–15 GB** | Error investigation |
+| Spans + entity filter (24h) | **15–20 GB** | Trace deep-dive only |
+| Spans + entity filter (7d) | **100–130 GB** | Use metrics instead |
+
+### Pre-Query Checklist (run mentally before every `execute_dql`)
+
+1. **Is there a FREE alternative?** (`timeseries`, `find_entity_by_name`, `list_problems`) → Use it.
+2. **Is the entity ID cached?** → Check `reference/Entities_Reference.md` before calling `find_entity_by_name` again.
+3. **Is the timeframe minimal?** → Start at 24h; only extend if necessary.
+4. **Are filters applied first?** → `event.type`, `loglevel`, `characteristics.classifier`, `dt.entity.*` before any other filter.
+5. **Are you using `summarize` not `limit 1000`?** → Aggregate; never fetch raw rows.
+6. **user.events domain filter?** → NEVER. Use `page.url.path` (exact) instead.
+
+### Correct Alternatives for Common Mistakes
+
 ```dql
-// User sessions are extremely cheap — always prefer for session-level data
-fetch user.sessions, from:now()-7d
-| filter frontend.name == "[APP_NAME]"
-| summarize sessions = count(), avg_duration = avg(duration)
+// ❌ WRONG — 300+ GB
+fetch spans, from:now()-7d | summarize count()
+
+// ✅ RIGHT — 0 GB (free metrics)
+timeseries { requests = sum(dt.service.request.count) }, from:now()-7d,
+filter:{dt.entity.service == "SERVICE-XXXX"}
 ```
 
-### LOW Cost (0-5 GB)
 ```dql
-fetch bizevents, from:now()-7d
-| filter event.type == "com.example.payment"  // ALWAYS filter event.type first
-| filter customField == "value"
-| summarize count()
-```
+// ❌ WRONG — 174 GB per 3d
+fetch user.events | filter page.url.domain == "www.example.com"
 
-### MEDIUM Cost (2-10 GB) — User Events (with correct filters)
-```dql
-// ALWAYS pre-filter by characteristics.classifier FIRST
+// ✅ RIGHT — 2–5 GB
 fetch user.events, from:now()-24h
-| filter page.url.path == "/your/bookings/"
 | filter characteristics.classifier == "user_action"
-| summarize count = count(), by:{user_action.type, interaction.name}
-| sort count desc
-```
-
-### HIGH Cost (100+ GB) - AVOID
-```dql
-// DON'T DO THIS - costs 100+ GB
-fetch spans, from:now()-7d
-| summarize count()
-
-// DON'T DO THIS - costs 174+ GB per 3d
-fetch user.events, from:now()-3d
-| filter page.url.domain == "www.[CLIENT_WEBSITE]"
-| summarize count()
-```
-
-### CORRECT Pattern
-```dql
-// DO THIS - use metrics (FREE)
-timeseries { requests = sum(dt.service.request.count) }, 
-from:now()-7d, filter:{dt.entity.service == "SERVICE-XXXXXXXXXXXX"}
+| filter page.url.path == "/checkout/"
+| summarize count = count(), by:{user_action.type}
 ```
 
 ### ⛔ Gen3 RUM Quick Reference (verified 2026-03-13)
