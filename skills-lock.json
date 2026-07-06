@@ -3,7 +3,7 @@
   "metadata": {
     "description": "Tracks all skills in the skills/ directory. Upstream skills are auto-synced from GitHub. Custom skills are managed locally.",
     "upstreamRepo": "dynatrace/dynatrace-for-ai",
-    "lastSyncedAt": "2026-06-18T00:00:00Z"
+    "lastSyncedAt": "2026-07-06T09:46:59Z"
   },
   "skills": {
     "dt-alerting": {
@@ -49,7 +49,7 @@
     "dt-obs-frontends": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "4c0a5012c1ef9f97fc2aa66d73f56ed5d00c474c48a6c71645d9b0aef652a7cc"
+      "computedHash": "b382773204955141c6a3752188787bcce390245385dd84c294ad491404822663"
     },
     "dt-obs-gcp": {
       "source": "dynatrace/dynatrace-for-ai",
@@ -90,6 +90,36 @@
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
       "computedHash": "de7370713e4a7cbdb85004876848e6cd98b3d630f1355fdd1f6145cd50a2b84a"
+    },
+    "dt-obs-ios-sdk": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "23abcd2679485c6629f44d91415a8eb1480599e5a46cfd671ac96b0fc8ff1301"
+    },
+    "dt-platform-costs": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "300604e78f670e9d1b0f99c474d7f14c753a24686561979a0d4b78243f9dcde5"
+    },
+    "dt-obs-flutter": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "c98f0b372df271853fc1781274d795ab649ea2c101f7b5081537631c54a361b2"
+    },
+    "dt-obs-android": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "50f5ac4861e529ecdc2c9fa6e7280a8404a1747d4a0f070ad84e62b51e65b24a"
+    },
+    "dt-sec-insights": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "024fd00c95ff14ddae93fceebe51d14ef4ff291c3fe6247c6e902815ba0c5949"
+    },
+    "dt-obs-react-native": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "d38787d8b970e454366c5d1ed6eb953baaf34eb1e53cd1b61a26e34bd12d97f6"
     }
   }
 }
