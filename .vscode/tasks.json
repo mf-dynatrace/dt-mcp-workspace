@@ -4,11 +4,14 @@
     {
       "label": "Auto-pull latest updates",
       "type": "shell",
-      "command": "git pull --ff-only 2>/dev/null || true; bash setup.sh 2>/dev/null || true",
+      "command": "bash scripts/auto-pull-setup.sh",
+      "windows": {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/auto-pull-setup.ps1"
+      },
       "presentation": {
-        "reveal": "silent",
+        "reveal": "always",
         "panel": "shared",
-        "close": true
+        "close": false
       },
       "problemMatcher": [],
       "runOptions": {

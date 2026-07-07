@@ -75,11 +75,13 @@ fi
 echo ""
 
 # --- 3. Check Node.js ---
+node_missing=0
 if command -v node &>/dev/null; then
   node_version=$(node --version)
   echo "✅ Node.js $node_version found"
 else
   echo "❌ Node.js not found — install Node.js 18+ from https://nodejs.org"
+  node_missing=1
 fi
 echo ""
 
@@ -95,6 +97,17 @@ echo ""
 # --- 5. Clean git status (remove M/U indicators in VS Code) ---
 if [ -d .git ]; then
   git checkout -- . 2>/dev/null || true
+fi
+
+if [ "$node_missing" -eq 1 ]; then
+  echo "======================================="
+  echo "❌ Setup incomplete — Node.js is required."
+  echo ""
+  echo "Install Node.js 18+ from https://nodejs.org, then:"
+  echo "  • Reload VS Code window (Ctrl+Shift+P → 'Developer: Reload Window'), or"
+  echo "  • Re-run: bash setup.sh"
+  echo ""
+  exit 1
 fi
 
 echo "======================================="
