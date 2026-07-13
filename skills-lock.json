@@ -3,7 +3,7 @@
   "metadata": {
     "description": "Tracks all skills in the skills/ directory. Upstream skills are auto-synced from GitHub. Custom skills are managed locally.",
     "upstreamRepo": "dynatrace/dynatrace-for-ai",
-    "lastSyncedAt": "2026-07-06T09:46:59Z"
+    "lastSyncedAt": "2026-07-13T08:38:30Z"
   },
   "skills": {
     "dt-alerting": {
@@ -14,17 +14,17 @@
     "dt-app-dashboards": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "66db8d73926867be1981abe73d7a45e21ac8e32d835c68ef142431ea667c7b52"
+      "computedHash": "8001ca0d102b4b3d5f9617cf088b2ea95360c53d68ddd849b298ba612aad8b6b"
     },
     "dt-app-notebooks": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "56e6cdd2cb5e05cbf4443bf08954c8ab44e21c2ffe8cff7b1ff53052d7d6fa03"
+      "computedHash": "b94b8aeac36da7e517a12d54a61379a169eb45471da14347cbbe8de11da4ef3a"
     },
     "dt-dql-essentials": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "8e47f8b0c594b8f2b0c5ba887688efc5e409216f5d86897576c849abdfde1743"
+      "computedHash": "03e8224f4feb2e62958a1095d7fe5b4e5ca62f36a079fa09c3c3f917ec376816"
     },
     "dt-js-runtime": {
       "source": "dynatrace/dynatrace-for-ai",
@@ -94,12 +94,12 @@
     "dt-obs-ios-sdk": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "23abcd2679485c6629f44d91415a8eb1480599e5a46cfd671ac96b0fc8ff1301"
+      "computedHash": "91ddc92bcafa1a9e189c6cf6b6482e13592e554f3930be5b5a9d5b68654a5503"
     },
     "dt-platform-costs": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "300604e78f670e9d1b0f99c474d7f14c753a24686561979a0d4b78243f9dcde5"
+      "computedHash": "d4670ff62a169b904256146853c93222f8fb16602dd951836578684fbcff3117"
     },
     "dt-obs-flutter": {
       "source": "dynatrace/dynatrace-for-ai",
@@ -114,12 +114,27 @@
     "dt-sec-insights": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "024fd00c95ff14ddae93fceebe51d14ef4ff291c3fe6247c6e902815ba0c5949"
+      "computedHash": "174427302bd0f08a0602ebff8164898f268b0e9ebe9e4e07f31a561d3458c06c"
     },
     "dt-obs-react-native": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
       "computedHash": "d38787d8b970e454366c5d1ed6eb953baaf34eb1e53cd1b61a26e34bd12d97f6"
+    },
+    "dt-obs-genai": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "81ed0261964055e36f6f3803ed0b3ad017a168a0bd130ba19cc8f25afe1de71a"
+    },
+    "dt-sec-semantic-mapping": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "3c631cf4538fdfa42b760e6dbf6ab7d648940e475ff691a1bba09bc5baa492d7"
+    },
+    "dt-obs-log-semantic-mapping": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "cd5708c5f5e95b5e0303eb5361712ef61b0aede38e13c0b1f601eb820e8ea5bb"
     }
   }
 }
