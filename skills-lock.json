@@ -3,7 +3,7 @@
   "metadata": {
     "description": "Tracks all skills in the skills/ directory. Upstream skills are auto-synced from GitHub. Custom skills are managed locally.",
     "upstreamRepo": "dynatrace/dynatrace-for-ai",
-    "lastSyncedAt": "2026-07-13T08:38:30Z"
+    "lastSyncedAt": "2026-08-03T08:52:47Z"
   },
   "skills": {
     "dt-alerting": {
@@ -91,11 +91,6 @@
       "sourceType": "github",
       "computedHash": "de7370713e4a7cbdb85004876848e6cd98b3d630f1355fdd1f6145cd50a2b84a"
     },
-    "dt-obs-ios-sdk": {
-      "source": "dynatrace/dynatrace-for-ai",
-      "sourceType": "github",
-      "computedHash": "91ddc92bcafa1a9e189c6cf6b6482e13592e554f3930be5b5a9d5b68654a5503"
-    },
     "dt-platform-costs": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
@@ -114,7 +109,7 @@
     "dt-sec-insights": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "174427302bd0f08a0602ebff8164898f268b0e9ebe9e4e07f31a561d3458c06c"
+      "computedHash": "330f8191b6665df700daffa52d902076d26c5c8bd1fad5faf5b9e225e185e294"
     },
     "dt-obs-react-native": {
       "source": "dynatrace/dynatrace-for-ai",
@@ -129,12 +124,37 @@
     "dt-sec-semantic-mapping": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "3c631cf4538fdfa42b760e6dbf6ab7d648940e475ff691a1bba09bc5baa492d7"
+      "computedHash": "d92b574afc7e26147d187cf71ba6b9faf74c971ab464025605a9b2f5c67c2468"
     },
     "dt-obs-log-semantic-mapping": {
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
-      "computedHash": "cd5708c5f5e95b5e0303eb5361712ef61b0aede38e13c0b1f601eb820e8ea5bb"
+      "computedHash": "5166e44b9d942314bf20ac92624658f855165381ba543ba07b52ecbd370c7d29"
+    },
+    "dt-obs-ext-monitors": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "87f170279ceec7d95630b7c192b6cbeb065cb1d2a8ea3000eda808cf428b9001"
+    },
+    "dt-sec-ioc-hunting": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "84dd8986122d9535ff3e7d908b2663acb9c705dfbfa4ff0ab3455f19b13fe523"
+    },
+    "dt-sec-contextualization": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "cb43fb4888cac6cc92b62b1746f6ed0952b992b6e8e1a882294cb5da1a555374"
+    },
+    "dt-obs-analytics": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "c7552cc90197bd64db0c87f4c28cf94626ffb16bc32db6be9b77664d0974bd6d"
+    },
+    "dt-obs-ios": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "github",
+      "computedHash": "4e5dadee30d31b56db07438667b656ea450fc66ac66ecf4ee675eb9289c005ae"
     }
   }
 }
