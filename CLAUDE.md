@@ -424,9 +424,17 @@ fetch user.events | filter characteristics.classifier == "user_action" and user_
 
 Skills are portable knowledge packages providing domain-specific DQL context. **Read the relevant skill before writing queries.**
 
+> **`dtws-*` = first-party skills authored and maintained in this repo.** They are committed here, distributed to every user via `git pull`, and excluded from the upstream sync so it can never overwrite them.
+
+### Core (always relevant)
 | Skill | Domain | When to Load |
 |-----------|--------|-------------|
-| `skills/dt-dql-essentials/SKILL.md` | **REQUIRED** — DQL syntax, pitfalls, data objects | Before writing ANY DQL |
+| `skills/dt-dql-essentials/SKILL.md` | **REQUIRED** — DQL syntax, pitfalls, data objects, query cost tuning | Before writing ANY DQL |
+| `skills/dt-migration/SKILL.md` | Classic/Gen2 entity → Smartscape migration | Migrating old DQL |
+
+### Observability
+| Skill | Domain | When to Load |
+|-----------|--------|-------------|
 | `skills/dt-obs-services/SKILL.md` | Service RED metrics, runtime monitoring | Service performance, SLA |
 | `skills/dt-obs-frontends/SKILL.md` | RUM, Web Vitals, user sessions, mobile | Frontend performance |
 | `skills/dt-obs-tracing/SKILL.md` | Distributed traces, spans, failures | Trace analysis |
@@ -434,16 +442,57 @@ Skills are portable knowledge packages providing domain-specific DQL context. **
 | `skills/dt-obs-problems/SKILL.md` | Problem analysis, root cause, impact | Davis problems |
 | `skills/dt-obs-hosts/SKILL.md` | Host/process metrics, infrastructure | CPU, memory, disk |
 | `skills/dt-obs-kubernetes/SKILL.md` | K8s clusters, pods, nodes, workloads | Kubernetes |
-| `skills/dt-finops-kubernetes/SKILL.md` | K8s FinOps, cost optimization, resource utilization, rightsizing | K8s cost analysis, FinOps reports |
+| `skills/dt-obs-analytics/SKILL.md` | Davis analyzers on dashboards/notebooks | User references a dashboard/notebook by URL, UUID, or name |
+| `skills/dt-obs-genai/SKILL.md` | GenAI/LLM apps — token cost, agent loops, guardrails, evals | LLM app debugging, AI cost |
+| `skills/dt-obs-ext-monitors/SKILL.md` | 3rd-party test/monitor result ingestion | External synthetic/CI results into Grail |
+| `skills/dt-obs-network-devices/SKILL.md` | SNMP devices — switches, routers, firewalls, LBs | Network device monitoring |
+| `skills/dt-obs-network-flows/SKILL.md` | OneAgent flows, NetFlow/IPFIX/sFlow, cloud flow logs | Network flow analysis |
+| `skills/dt-obs-log-semantic-mapping/SKILL.md` | Semantic dictionary mapping for audit/auth log feeds | Onboarding a vendor log integration |
+| `skills/dt-obs-compliance-assistant/SKILL.md` | EU DORA compliance posture, CIF health, ICT risk | Compliance score, incident lifecycle |
+| `skills/dt-obs-predictive-analytics/SKILL.md` | Trend detection, forecasting, anomaly scoring | Predictive analysis, capacity planning |
+
+### Cloud
+| Skill | Domain | When to Load |
+|-----------|--------|-------------|
 | `skills/dt-obs-aws/SKILL.md` | AWS resources, cost, security | AWS infrastructure |
 | `skills/dt-obs-azure/SKILL.md` | Azure cloud resources, cost, networking | Azure infrastructure |
 | `skills/dt-obs-gcp/SKILL.md` | GCP cloud resources, cost, networking | GCP infrastructure |
-| `skills/dt-obs-predictive-analytics/SKILL.md` | Trend detection, forecasting, anomaly scoring | Predictive analysis |
+
+### Security
+| Skill | Domain | When to Load |
+|-----------|--------|-------------|
+| `skills/dt-sec-insights/SKILL.md` | `security.events` — vulnerabilities, detections, compliance, scan coverage | Security posture, CVE analysis |
+| `skills/dt-sec-ioc-hunting/SKILL.md` | IoC hunting across logs/spans, 0–100 threat exposure score | Threat-intel indicator hunting |
+| `skills/dt-sec-contextualization/SKILL.md` | Resolve security signals/IoCs to runtime entities | Linking findings across entity levels |
+| `skills/dt-sec-semantic-mapping/SKILL.md` | Semantic dictionary mapping for security integrations | Onboarding a security vendor feed |
+| `skills/dtws-sec-abnormal-behavior/SKILL.md` | **(workspace)** Bot detection, credential stuffing, scraping, proxy campaigns, geo anomalies | "bot detection", "abnormal sessions", "suspicious traffic", "account takeover", "scraping", "fraud detection" |
+
+### FinOps & Cost
+| Skill | Domain | When to Load |
+|-----------|--------|-------------|
+| `skills/dt-platform-costs/SKILL.md` | Tenant's ACTUAL DPS billing/consumption data | Dynatrace spend, chargeback/showback of DPS |
+| `skills/dtws-finops-k8/SKILL.md` | **(workspace)** K8s FinOps — rightsizing, idle resources, unit economics, chargeback | "FinOps report", "K8s cost analysis", "cluster utilisation", "namespace cost", "K8s waste" |
+
+### Analysis Workflows (workspace)
+| Skill | Domain | When to Load |
+|-----------|--------|-------------|
+| `skills/dtws-rum-heatanalysis/SKILL.md` | **(workspace)** RUM page interaction analysis — heatmap equivalent (clicks, element interaction, action failures, CWV, geo, long tasks) | "heatmap", "page interaction", "what did users click", "click analysis", "rage clicks on page" |
+
+### Platform & Development
+| Skill | Domain | When to Load |
+|-----------|--------|-------------|
 | `skills/dt-alerting/SKILL.md` | Alerting config, anomaly detectors, notifications | Alert setup |
 | `skills/dt-js-runtime/SKILL.md` | Dynatrace JS runtime, SDKs, automation | App/workflow development |
 | `skills/dt-app-dashboards/SKILL.md` | Dashboard creation/modification | Building dashboards |
 | `skills/dt-app-notebooks/SKILL.md` | Notebook creation/modification | Building notebooks |
-| `skills/dt-migration/SKILL.md` | Classic entity → Smartscape migration | Migrating old DQL |
+
+### Mobile SDK Setup
+| Skill | Domain | When to Load |
+|-----------|--------|-------------|
+| `skills/dt-setup-android/SKILL.md` | Android agent instrumentation | Instrumenting an Android app |
+| `skills/dt-setup-ios/SKILL.md` | iOS SDK setup via SPM | Instrumenting an iOS app |
+| `skills/dt-setup-flutter/SKILL.md` | Flutter agent setup | Instrumenting a Flutter app |
+| `skills/dt-setup-react-native/SKILL.md` | React Native agent setup | Instrumenting a React Native app |
 
 Each skill directory may contain a `references/` subdirectory with detailed sub-topics. SKILL.md will indicate when to load these with "Load [filename] when:" directives.
 
@@ -522,6 +571,8 @@ Then re-verify before continuing.
 
 **Filename conventions:**
 - FinOps reports: `FinOps_K8s_Report_YYYY-MM-DD.md` or `FinOps_K8s_Report_[ClusterName]_YYYY-MM-DD.md`
+- Security abnormal-behaviour reports: `Security_AbnormalBehavior_[AppName]_YYYY-MM-DD.md`
+- RUM interaction reports: `RUM_Interaction_[PageName]_YYYY-MM-DD.md`
 - Investigation reports: `Investigation_[Topic]_YYYY-MM-DD.md`
 - Analysis reports: `Analysis_[Subject]_YYYY-MM-DD.md`
 

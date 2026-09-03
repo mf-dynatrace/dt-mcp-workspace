@@ -23,22 +23,30 @@
 | [AI_Prompt.md](../AI_Prompt.md) | Templates | Task templates and prompts |
 | [example/MCP_Query_Usage_Dashboard.json](../example/MCP_Query_Usage_Dashboard.json) | Dashboard | MCP usage monitoring dashboard |
 
-### 🧠 Dynatrace AI Skills (from [dynatrace-for-ai](https://github.com/Dynatrace/dynatrace-for-ai))
+### 🧠 Dynatrace AI Skills
+
+> Full skill catalogue with load triggers: see the **Dynatrace AI Skills** section in [CLAUDE.md](../CLAUDE.md) / [.github/copilot-instructions.md](../.github/copilot-instructions.md).
+> `dt-*` skills sync from [dynatrace-for-ai](https://github.com/Dynatrace/dynatrace-for-ai). **`dtws-*` are first-party skills maintained in this repo** and distributed via `git pull` — the upstream sync never touches them.
 
 | File | Domain | When to Load |
 |------|--------|-------------|
-| [skills/dt-dql-essentials.md](skills/dt-dql-essentials.md) | **REQUIRED** — DQL syntax, pitfalls, data objects | Before writing ANY DQL |
-| [skills/dt-obs-services.md](skills/dt-obs-services.md) | Service RED metrics, runtime monitoring | Service performance, SLA |
-| [skills/dt-obs-frontends.md](skills/dt-obs-frontends.md) | RUM, Web Vitals, user sessions, mobile | Frontend performance |
-| [skills/dt-obs-tracing.md](skills/dt-obs-tracing.md) | Distributed traces, spans, failures | Trace analysis |
-| [skills/dt-obs-logs.md](skills/dt-obs-logs.md) | Log queries, filtering, patterns | Log analysis |
-| [skills/dt-obs-problems.md](skills/dt-obs-problems.md) | Problem analysis, root cause, impact | Davis problems |
-| [skills/dt-obs-hosts.md](skills/dt-obs-hosts.md) | Host/process metrics, infrastructure | CPU, memory, disk |
-| [skills/dt-obs-kubernetes.md](skills/dt-obs-kubernetes.md) | K8s clusters, pods, nodes, workloads | Kubernetes |
-| [skills/dt-obs-aws.md](skills/dt-obs-aws.md) | AWS resources, cost, security | AWS infrastructure |
-| [skills/dt-app-dashboards.md](skills/dt-app-dashboards.md) | Dashboard creation/modification | Building dashboards |
-| [skills/dt-app-notebooks.md](skills/dt-app-notebooks.md) | Notebook creation/modification | Building notebooks |
-| [skills/dt-migration.md](skills/dt-migration.md) | Classic entity → Smartscape migration | Migrating old DQL |
+| [skills/dt-dql-essentials/SKILL.md](../skills/dt-dql-essentials/SKILL.md) | **REQUIRED** — DQL syntax, pitfalls, cost tuning | Before writing ANY DQL |
+| [skills/dt-obs-services/SKILL.md](../skills/dt-obs-services/SKILL.md) | Service RED metrics, runtime monitoring | Service performance, SLA |
+| [skills/dt-obs-frontends/SKILL.md](../skills/dt-obs-frontends/SKILL.md) | RUM, Web Vitals, user sessions, mobile | Frontend performance |
+| [skills/dt-obs-tracing/SKILL.md](../skills/dt-obs-tracing/SKILL.md) | Distributed traces, spans, failures | Trace analysis |
+| [skills/dt-obs-logs/SKILL.md](../skills/dt-obs-logs/SKILL.md) | Log queries, filtering, patterns | Log analysis |
+| [skills/dt-obs-problems/SKILL.md](../skills/dt-obs-problems/SKILL.md) | Problem analysis, root cause, impact | Davis problems |
+| [skills/dt-obs-hosts/SKILL.md](../skills/dt-obs-hosts/SKILL.md) | Host/process metrics, infrastructure | CPU, memory, disk |
+| [skills/dt-obs-kubernetes/SKILL.md](../skills/dt-obs-kubernetes/SKILL.md) | K8s clusters, pods, nodes, workloads | Kubernetes |
+| [skills/dt-obs-aws/SKILL.md](../skills/dt-obs-aws/SKILL.md) | AWS resources, cost, security | AWS infrastructure |
+| [skills/dt-platform-costs/SKILL.md](../skills/dt-platform-costs/SKILL.md) | Tenant's actual DPS billing/consumption | Dynatrace spend, chargeback |
+| [skills/dt-sec-insights/SKILL.md](../skills/dt-sec-insights/SKILL.md) | `security.events` — vulns, detections, compliance | Security posture, CVEs |
+| [skills/dt-app-dashboards/SKILL.md](../skills/dt-app-dashboards/SKILL.md) | Dashboard creation/modification | Building dashboards |
+| [skills/dt-app-notebooks/SKILL.md](../skills/dt-app-notebooks/SKILL.md) | Notebook creation/modification | Building notebooks |
+| [skills/dt-migration/SKILL.md](../skills/dt-migration/SKILL.md) | Classic entity → Smartscape migration | Migrating old DQL |
+| [skills/dtws-finops-k8/SKILL.md](../skills/dtws-finops-k8/SKILL.md) | **(workspace)** K8s FinOps — rightsizing, waste, chargeback | "FinOps report", "K8s cost analysis" |
+| [skills/dtws-rum-heatanalysis/SKILL.md](../skills/dtws-rum-heatanalysis/SKILL.md) | **(workspace)** RUM page interaction / heatmap equivalent | "heatmap", "what did users click" |
+| [skills/dtws-sec-abnormal-behavior/SKILL.md](../skills/dtws-sec-abnormal-behavior/SKILL.md) | **(workspace)** Bot detection, credential stuffing, scraping | "bot detection", "abnormal sessions" |
 
 ### 📋 Reusable Prompt Templates (`.github/prompts/`)
 
