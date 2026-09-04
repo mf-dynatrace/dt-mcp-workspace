@@ -172,18 +172,23 @@
       "computedHash": "19c30eb8e1a3fe1b925522e17ab065c57acf416871de0c44c6b2517c054d51a9"
     },
     "dtws-finops-k8": {
-      "source": "local",
-      "sourceType": "custom",
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "upstream",
       "computedHash": ""
     },
     "dtws-rum-heatanalysis": {
-      "source": "local",
-      "sourceType": "custom",
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "upstream",
       "computedHash": ""
     },
     "dtws-sec-abnormal-behavior": {
-      "source": "local",
-      "sourceType": "custom",
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "upstream",
+      "computedHash": ""
+    },
+    "dtws-rum-JS-fixes": {
+      "source": "dynatrace/dynatrace-for-ai",
+      "sourceType": "upstream",
       "computedHash": ""
     }
   }

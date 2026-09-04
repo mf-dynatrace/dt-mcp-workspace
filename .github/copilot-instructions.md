@@ -582,6 +582,7 @@ Skills are portable knowledge packages that provide domain-specific DQL context.
 | Skill | Domain | When to Load |
 |-----------|--------|-------------|
 | `skills/dtws-rum-heatanalysis/SKILL.md` | **(workspace)** RUM page interaction analysis — heatmap equivalent (clicks, element interaction, action failures, CWV, geo, long tasks) | "heatmap", "page interaction", "what did users click", "click analysis", "rage clicks on page" |
+| `skills/dtws-rum-JS-fixes/SKILL.md` | **(workspace)** Top JS runtime exceptions — impact quantification, source fetch & sourcemap resolution, defensive fix suggestions, markdown report | "JS errors", "javascript errors", "top JS errors", "fix JS error", "RUM exceptions", "browser console errors", "client-side error analysis", "frontend error triage" |
 
 ### Platform & Development
 | Skill | Domain | When to Load |
