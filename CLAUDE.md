@@ -19,6 +19,21 @@
 
 ---
 
+## 🔍 MANDATORY: Validate the Auto-Pull Actually Succeeded (DO THIS FIRST, BEFORE RE-READING)
+
+> **The `Auto-pull latest updates` task (`git pull --ff-only` + `bash setup.sh`) can fail silently.** An untracked local file colliding with a new upstream file, a merge conflict, or a task error that doesn't surface can all block the pull with no visible warning — leaving the whole workspace on stale skills/instructions with no signal that anything is wrong.
+
+**As the very first action of every session, before anything else, you MUST:**
+1. Run `git fetch origin` to refresh remote-tracking refs.
+2. Run `git rev-list --count HEAD..origin/main` to check how far behind `origin/main` the local `main` branch is.
+3. **If the count is `0`:** sync succeeded — proceed to the "Re-Read Instructions" step below as normal.
+4. **If the count is greater than `0`:** the auto-pull did not complete. Run `git status` to check for an obvious blocker (untracked file collision, conflict markers, etc. — for context on causes see "Re-Read Instructions" below), then **stop and ask the user**:
+   > "Local repo is `N` commit(s) behind `origin/main` — the auto-sync may have failed silently. Would you like me to update to the latest version now?"
+5. **If the user says yes:** overwrite any local copies that are blocking or out of sync with the upstream version (e.g. `git checkout -- <file>` for a conflicting tracked file, or remove/replace an untracked file colliding with a new upstream one), run `git pull --ff-only`, then run `bash setup.sh` to re-heal any missing reference files. Then proceed to re-read `CLAUDE.md` and `.github/copilot-instructions.md` from disk, since they likely just changed.
+6. **If the user says no:** continue the session on the current (stale) on-disk files, and note plainly to the user that the workspace is running behind `origin/main`.
+
+---
+
 ## �🔌 MCP Server Connection (How Claude Connects)
 
 > **If the Dynatrace MCP tools are missing in a session, this is almost always why.**
@@ -102,6 +117,7 @@ When `MCP_USE_USER_VARIABLE=no`:
 
 Complete all items below before executing any query, command, or code change:
 
+- [ ] Validate the auto-pull actually succeeded (compare local `HEAD` to `origin/main`; if behind, prompt the user before continuing)
 - [ ] Re-read `CLAUDE.md` and `.github/copilot-instructions.md` from disk (auto-pull may have updated them — do NOT trust initial context)
 - [ ] Read `.env` and resolve feature flags
 - [ ] Resolve `user.id` when `MCP_USE_USER_VARIABLE=yes`
@@ -208,6 +224,17 @@ At the END of every session, verify you have documented:
 ---
 
 ## 🚀 SESSION STARTUP PROTOCOL
+
+### Step -1: Validate the Auto-Pull Succeeded (ALWAYS DO THIS FIRST, BEFORE STEP 0a)
+```
+1. git fetch origin
+2. git rev-list --count HEAD..origin/main
+3. If 0 → sync OK, proceed to Step 0a
+4. If >0 → auto-pull failed silently; check git status for the blocker, then ASK the user
+   whether to update now. If yes: resolve blockers, git pull --ff-only, bash setup.sh, then
+   re-read instruction files (Step 0a). If no: continue on stale files and say so.
+```
+See the "Validate the Auto-Pull Actually Succeeded" section at the top of this file for full details.
 
 ### Step 0a: Re-Read Instruction Files From Disk (ALWAYS DO THIS FIRST)
 ```
