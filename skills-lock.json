@@ -3,7 +3,7 @@
   "metadata": {
     "description": "Tracks all skills in the skills/ directory. Upstream skills are auto-synced from GitHub. Custom skills are managed locally.",
     "upstreamRepo": "dynatrace/dynatrace-for-ai",
-    "lastSyncedAt": "2026-09-14T11:00:16Z"
+    "lastSyncedAt": "2026-08-17T06:24:19Z"
   },
   "skills": {
     "dt-alerting": {
@@ -170,6 +170,26 @@
       "source": "dynatrace/dynatrace-for-ai",
       "sourceType": "github",
       "computedHash": "19c30eb8e1a3fe1b925522e17ab065c57acf416871de0c44c6b2517c054d51a9"
+    },
+    "dtws-finops-k8": {
+      "source": "workspace",
+      "sourceType": "workspace",
+      "computedHash": ""
+    },
+    "dtws-rum-heatanalysis": {
+      "source": "workspace",
+      "sourceType": "workspace",
+      "computedHash": ""
+    },
+    "dtws-sec-abnormal-behavior": {
+      "source": "workspace",
+      "sourceType": "workspace",
+      "computedHash": ""
+    },
+    "dtws-rum-JS-fixes": {
+      "source": "workspace",
+      "sourceType": "workspace",
+      "computedHash": ""
     }
   }
 }
