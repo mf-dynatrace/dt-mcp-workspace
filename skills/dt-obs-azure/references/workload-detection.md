@@ -44,7 +44,7 @@ Determine if the VM is behind an Azure Load Balancer. VMs connect to LBs through
 
 ```dql-template
 smartscapeNodes "AZURE_MICROSOFT_COMPUTE_VIRTUALMACHINES"
-| filter id == "<WORKLOAD_VM_ENTITY_ID>"
+| filter id == toSmartscapeId("<WORKLOAD_VM_ENTITY_ID>")
 | traverse "*", "AZURE_MICROSOFT_COMPUTE_VIRTUALMACHINESCALESETS"
 | traverse "*", "AZURE_MICROSOFT_NETWORK_LOADBALANCERS_BACKENDADDRESSPOOLS"
 | fields name, id, azure.resource.group
@@ -64,7 +64,7 @@ smartscapeNodes "AZURE_MICROSOFT_NETWORK_LOADBALANCERS"
 
 ```dql-template
 smartscapeNodes "AZURE_MICROSOFT_COMPUTE_VIRTUALMACHINES"
-| filter id == "<WORKLOAD_VM_ENTITY_ID>"
+| filter id == toSmartscapeId("<WORKLOAD_VM_ENTITY_ID>")
 | traverse "*", "AZURE_MICROSOFT_COMPUTE_VIRTUALMACHINESCALESETS"
 | traverse "*", "AZURE_MICROSOFT_NETWORK_VIRTUALNETWORKS_SUBNETS"
 | fields name, id, azure.resource.group
@@ -78,7 +78,7 @@ Identify the Load Balancer SKU and AKS association (if any):
 smartscapeNodes "AZURE_MICROSOFT_NETWORK_LOADBALANCERS"
 | parse azure.object, "JSON:azjson"
 | fieldsAdd skuName = azjson[configuration][sku][name]
-| fieldsAdd aksCluster = azjson[tags][`aks-managed-cluster-name`]
+| fieldsAdd aksCluster = `tags:azure`[`aks-managed-cluster-name`]
 | fields name, skuName, aksCluster, azure.resource.group, azure.location
 ```
 
@@ -92,7 +92,7 @@ Determine if the VM is part of a Virtual Machine Scale Set.
 
 ```dql-template
 smartscapeNodes "AZURE_MICROSOFT_COMPUTE_VIRTUALMACHINES"
-| filter id == "<WORKLOAD_VM_ENTITY_ID>"
+| filter id == toSmartscapeId("<WORKLOAD_VM_ENTITY_ID>")
 | traverse "*", "AZURE_MICROSOFT_COMPUTE_VIRTUALMACHINESCALESETS"
 | parse azure.object, "JSON:azjson"
 | fieldsAdd vmSize = azjson[configuration][sku][name],
@@ -108,9 +108,8 @@ Check VMSS-to-AKS association to distinguish generic VMSS from AKS node pools:
 
 ```dql
 smartscapeNodes "AZURE_MICROSOFT_COMPUTE_VIRTUALMACHINESCALESETS"
-| parse azure.object, "JSON:azjson"
-| fieldsAdd aksPoolName = azjson[configuration][tags][`aks-managed-poolName`],
-            aksOrchestrator = azjson[configuration][tags][`aks-managed-orchestrator`]
+| fieldsAdd aksPoolName = `tags:azure`[`aks-managed-poolName`],
+            aksOrchestrator = `tags:azure`[`aks-managed-orchestrator`]
 | filter isNotNull(aksPoolName)
 | fields name, id, aksPoolName, aksOrchestrator, azure.resource.group
 ```
@@ -133,11 +132,10 @@ Detect whether the VMSS is an AKS node pool. AKS-managed VMSS instances carry sp
 
 ```dql-template
 smartscapeNodes "AZURE_MICROSOFT_COMPUTE_VIRTUALMACHINES"
-| filter id == "<WORKLOAD_VM_ENTITY_ID>"
+| filter id == toSmartscapeId("<WORKLOAD_VM_ENTITY_ID>")
 | traverse "*", "AZURE_MICROSOFT_COMPUTE_VIRTUALMACHINESCALESETS"
-| parse azure.object, "JSON:azjson"
-| fieldsAdd aksPoolName = azjson[configuration][tags][`aks-managed-poolName`],
-            aksOrchestrator = azjson[configuration][tags][`aks-managed-orchestrator`]
+| fieldsAdd aksPoolName = `tags:azure`[`aks-managed-poolName`],
+            aksOrchestrator = `tags:azure`[`aks-managed-orchestrator`]
 | filter isNotNull(aksPoolName)
 | fields name, id, aksPoolName, aksOrchestrator, azure.resource.group
 ```
@@ -179,7 +177,7 @@ If none of the above detection queries return results, the VM is standalone — 
 
 ```dql-template
 smartscapeNodes "AZURE_MICROSOFT_COMPUTE_VIRTUALMACHINES"
-| filter id == "<WORKLOAD_VM_ENTITY_ID>"
+| filter id == toSmartscapeId("<WORKLOAD_VM_ENTITY_ID>")
 | parse azure.object, "JSON:azjson"
 | fieldsAdd vmSize = azjson[configuration][properties][hardwareProfile][vmSize],
             powerState = azjson[configuration][properties][extended][instanceView][powerState][displayStatus],

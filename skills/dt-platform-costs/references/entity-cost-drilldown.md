@@ -21,7 +21,7 @@ When the user asks to drill down into a specific billing capability (e.g.,
 
 1. **Sample first** — Run `| limit 3` (no `| fields` clause) on the target BUE
    event type to discover available entity fields. NEVER guess field names.
-   Entity fields use `dt.entity.*` prefixes, not intuitive names.
+   Entity fields use `dt.entity.*` prefixes, not intuitive names; the host field is `dt.entity.host` or `dt.smartscape.host`, whichever the sample shows.
 2. **Look up the entity field** — Consult the
    [Entity Field Quick-Lookup](#entity-field-quick-lookup)
    to confirm the correct group-by field for the category.
@@ -65,14 +65,16 @@ When the user asks to drill down into a specific billing capability (e.g.,
 
 ## Entity Field Quick-Lookup
 
+Where two host fields are listed, use the one the sample shows.
+
 | BUE Category | Entity / Group-By Field(s) |
 |---|---|
-| Full-Stack Monitoring | `dt.entity.host` |
-| Infrastructure Monitoring | `dt.entity.host` |
-| Foundation & Discovery | `dt.entity.host` |
-| Code Monitoring | `dt.entity.host`, `k8s.cluster.uid`, `k8s.namespace.name` |
-| Runtime Application Protection | `dt.entity.host` |
-| Runtime Vulnerability Analytics | `dt.entity.host` |
+| Full-Stack Monitoring | `dt.entity.host` / `dt.smartscape.host` |
+| Infrastructure Monitoring | `dt.entity.host` / `dt.smartscape.host` |
+| Foundation & Discovery | `dt.entity.host` / `dt.smartscape.host` |
+| Code Monitoring | `dt.entity.host` / `dt.smartscape.host`, `k8s.cluster.uid`, `k8s.namespace.name` |
+| Runtime Application Protection | `dt.entity.host` / `dt.smartscape.host` |
+| Runtime Vulnerability Analytics | `dt.entity.host` / `dt.smartscape.host` |
 | Real User Monitoring | `dt.entity.application`, `dt.entity.device_application`, `device.type` |
 | Real User Monitoring with Session Replay | `dt.entity.application`, `dt.entity.device_application`, `device.type` |
 | Real User Monitoring Property | `dt.entity.application`, `dt.entity.device_application`, `device.type` |
@@ -123,6 +125,8 @@ fetch dt.system.events, from: -7d
 
 ### Host Monitoring (Full-Stack, Infrastructure, Foundation)
 
+#### All-Hosts Ranking (Unrated / No Rate Card)
+
 ```dql-template
 fetch dt.system.events, from: -7d
 | filter event.kind == "BILLING_USAGE_EVENT"
@@ -134,10 +138,21 @@ fetch dt.system.events, from: -7d
 | limit 20
 ```
 
+> Replace `dt.entity.host` with `dt.smartscape.host` if the sample shows that field. Within one `event.type` this ranking sorts by the billed field (the weight is constant).
+>
 > Use `billed_gibibyte_hours` for Full-Stack, `billed_host_hours` for
 > Infrastructure and Foundation. See
 > [billing-event-types.md](billing-event-types.md) for the correct billed
 > field per event type.
+
+**Rated path:** When a rate card is available, name the summarize output
+`billable_usage` instead of `total_usage` — the join reads that field, raw and
+unconverted — and keep `event.type` in the group-by, because the join matches on it:
+`| summarize billable_usage = sum(<billed field>), by: {dt.entity.host, event.type}`.
+Then append the rate-card join from
+[cost-estimations.md § Price Source Resolution](cost-estimations.md#price-source-resolution),
+then sort with `isNull(estimated_cost) asc, estimated_cost desc`. For output rules and disclaimer wording, see
+[cost-estimations.md § Output Rules for Rated Path](cost-estimations.md#output-rules-for-rated-path).
 
 ### RUM (Real User Monitoring)
 
@@ -260,7 +275,7 @@ fetch dt.system.events, from: -7d
 
 ### AppEngine AI Invocations
 
-**AI Function Standard Call** (non-LLM tool usage, `billed_invocations`):
+**AI Function Standard Call** (non-LLM tool calls triggered by AI, `billed_invocations`):
 
 ```dql
 fetch dt.system.events, from: -7d
